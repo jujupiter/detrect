@@ -1,0 +1,6 @@
+numpy<2  # torch 2.2.2 (last Intel-macOS build) is compiled against NumPy 1.x
+pandas
+scikit-learn
+Pillow
+torch==2.2.2
+torchvision==0.17.2

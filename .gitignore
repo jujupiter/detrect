@@ -1,0 +1,14 @@
+.venv/
+.idea/
+__pycache__/
+.DS_Store
+
+# downloaded datasets (see README)
+data/trashnet/
+data/realwaste/
+data/taco/
+# Commons photos: only their sources.csv is kept, download_commons.py fetches them
+data/commons_*/*/
+
+# trained checkpoints
+models/
