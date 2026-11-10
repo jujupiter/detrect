@@ -55,7 +55,7 @@ Rope & strings,Rope & strings,J49 J242,plastic rope (diameter more than 1cm) | p
 Scrap metal,Scrap metal,J198 J199,other metal pieces 2.5cm  ≥ ≤  50cm | other metal pieces > 50cm,metal,broader,size split (50 cm) dropped
 Shoe,Shoe,J136 J138,footwear made of plastic - not flip flops | shoes & sandals made of leather and/or textile,artificial polymer materials / cloth/textile,broader,plastic or leather/textile footwear
 Squeezable tube,Squeezable tube,,,,none,cosmetics (J12) or pharmaceutical (J100)
-Straw,Paper straw,,,,none,no paper straw code
+Straw,Paper straw,J158,other paper items,paper/cardboard,merge,no paper straw code; J158 is a catch-all
 Straw,Plastic straw,J231,plastic straws,artificial polymer materials,exact,
 Styrofoam piece,Styrofoam piece,J82 J83,fragments of foamed polystyrene 2.5 cm  ≥ ≤  50 cm | fragments of foamed polystyrene > 50cm,artificial polymer materials,broader,size split (50 cm) dropped
 Unlabeled litter,Unlabeled litter,,,,none,unlabelled
