@@ -1,10 +1,16 @@
-"""Train ResNet-18 on trashnet alone, from ImageNet weights. Saves models/best_model.pth and prints test accuracy."""
+"""Train a model on trashnet alone, from ImageNet weights. Saves models/<arch>_base.pth and prints test accuracy.
+
+usage: python train.py [--arch resnet50]
+"""
+import argparse
+
 import pandas as pd
 import torch
 import torch.nn as nn
 from torch.utils.data import DataLoader
 
-from common import BASE_CHECKPOINT, DEVICE, EVAL_TF, NUM_WORKERS, TRAIN_TF, TRASHNET_SPLITS, TrashDataset, build_model
+from common import (ARCHS, DEFAULT_ARCH, DEVICE, EVAL_TF, NUM_WORKERS, TRAIN_TF, TRASHNET_SPLITS, TrashDataset,
+                    base_checkpoint, build_model, load_checkpoint, save_model)
 
 EPOCHS = 20
 BATCH_SIZE = 32
@@ -30,12 +36,17 @@ def run_epoch(model, loader, criterion, optimizer=None):
 
 
 def main():
+    parser = argparse.ArgumentParser()
+    parser.add_argument("--arch", default=DEFAULT_ARCH, choices=ARCHS)
+    args = parser.parse_args()
+    checkpoint = base_checkpoint(args.arch)
+
     df = pd.read_csv(TRASHNET_SPLITS)
     train_loader = DataLoader(TrashDataset(df[df.split == "train"], TRAIN_TF), batch_size=BATCH_SIZE, shuffle=True, num_workers=NUM_WORKERS)
     val_loader   = DataLoader(TrashDataset(df[df.split == "val"],   EVAL_TF),  batch_size=BATCH_SIZE, num_workers=NUM_WORKERS)
     test_loader  = DataLoader(TrashDataset(df[df.split == "test"],  EVAL_TF),  batch_size=BATCH_SIZE, num_workers=NUM_WORKERS)
 
-    model = build_model()
+    model = build_model(args.arch)
     criterion = nn.CrossEntropyLoss()
     optimizer = torch.optim.Adam(model.parameters(), lr=LR)
 
@@ -46,10 +57,10 @@ def main():
         print(f"Epoch {epoch:02d} | train loss {train_loss:.4f} acc {train_acc:.4f} | val loss {val_loss:.4f} acc {val_acc:.4f}")
         if val_acc > best_val_acc:
             best_val_acc = val_acc
-            torch.save(model.state_dict(), BASE_CHECKPOINT)
-            print(f"           -> checkpoint saved (val acc {val_acc:.4f})")
+            save_model(model, args.arch, checkpoint)
+            print(f"           -> saved to {checkpoint} (val acc {val_acc:.4f})")
 
-    model.load_state_dict(torch.load(BASE_CHECKPOINT, weights_only=True))
+    model.load_state_dict(load_checkpoint(checkpoint)[1])
     _, test_acc = run_epoch(model, test_loader, criterion)
     print(f"\nTest accuracy: {test_acc:.4f}")
 

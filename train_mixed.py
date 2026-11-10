@@ -1,7 +1,7 @@
 """Fine-tune the trashnet model on trashnet + RealWaste + TACO, with every batch mixing the three sources.
 
-Run prepare_extra_data.py first. Starts from models/best_model.pth and saves models/best_model_mixed.pth.
-usage: python train_mixed.py [--epochs 20] [--patience 4]
+Run prepare_extra_data.py and train.py first. Starts from models/<arch>_base.pth and saves models/<arch>_mixed.pth.
+usage: python train_mixed.py [--arch resnet50] [--epochs 20] [--patience 4]
 """
 import argparse
 import random
@@ -11,7 +11,8 @@ import torch
 import torch.nn as nn
 from torch.utils.data import DataLoader, Sampler
 
-from common import BASE_CHECKPOINT, DEVICE, MIXED_CHECKPOINT, NUM_WORKERS, TRAIN_TF, TrashDataset, build_model, load_splits, predict_all
+from common import (ARCHS, DEFAULT_ARCH, DEVICE, NUM_WORKERS, TRAIN_TF, TrashDataset, base_checkpoint, load_model, load_splits,
+                    mixed_checkpoint, predict_all, save_model)
 
 # images per source in every batch of 32
 BATCH_MIX = {"trashnet": 12, "realwaste": 10, "taco": 10}
@@ -53,9 +54,11 @@ def evaluate(model, df):
 
 def main():
     parser = argparse.ArgumentParser()
+    parser.add_argument("--arch", default=DEFAULT_ARCH, choices=ARCHS)
     parser.add_argument("--epochs", type=int, default=20, help="maximum number of epochs")
     parser.add_argument("--patience", type=int, default=4, help="stop after this many epochs without improvement")
     args = parser.parse_args()
+    out = mixed_checkpoint(args.arch)
 
     df = load_splits()
     train = df[df.split == "train"].reset_index(drop=True)
@@ -65,8 +68,7 @@ def main():
     sampler = MixedBatchSampler(train.source.tolist(), BATCH_MIX)
     train_loader = DataLoader(TrashDataset(train, TRAIN_TF), batch_sampler=sampler, num_workers=NUM_WORKERS)
 
-    model = build_model()
-    model.load_state_dict(torch.load(BASE_CHECKPOINT, map_location=DEVICE, weights_only=True))
+    model = load_model(base_checkpoint(args.arch))
     criterion = nn.CrossEntropyLoss()
     optimizer = torch.optim.Adam(model.parameters(), lr=LR)
 
@@ -74,7 +76,7 @@ def main():
     print("Before fine-tuning | val acc " + " ".join(f"{s} {a:.3f}" for s, a in acc.items()), flush=True)
     # select on the mean over sources, so trashnet (the easiest) does not decide alone
     best, best_epoch = acc.mean(), 0
-    torch.save(model.state_dict(), MIXED_CHECKPOINT)
+    save_model(model, args.arch, out)
 
     for epoch in range(1, args.epochs + 1):
         model.train()
@@ -93,12 +95,12 @@ def main():
               + " ".join(f"{s} {a:.3f}" for s, a in acc.items()) + f" | mean {acc.mean():.3f} | {time.time() - start:.0f}s", flush=True)
         if acc.mean() > best:
             best, best_epoch = acc.mean(), epoch
-            torch.save(model.state_dict(), MIXED_CHECKPOINT)
+            save_model(model, args.arch, out)
             print(f"           -> checkpoint saved (mean val acc {best:.4f})", flush=True)
         elif epoch - best_epoch >= args.patience:
             print(f"No improvement for {args.patience} epochs: stopping.")
             break
-    print(f"Best: epoch {best_epoch}, mean val acc {best:.4f}, saved to {MIXED_CHECKPOINT}")
+    print(f"Best: epoch {best_epoch}, mean val acc {best:.4f}, saved to {out}")
 
 
 if __name__ == "__main__":

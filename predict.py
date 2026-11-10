@@ -1,13 +1,13 @@
 """Classify images with a trained checkpoint and print the top 3 classes.
 
-usage: python predict.py [--model models/best_model.pth] IMAGE [IMAGE ...]
+usage: python predict.py [--model models/resnet50_mixed.pth] IMAGE [IMAGE ...]
 """
 import argparse
 
 import torch
 from PIL import Image
 
-from common import CLASSES, DEVICE, EVAL_TF, MIXED_CHECKPOINT, load_model
+from common import CLASSES, DEFAULT_ARCH, DEVICE, EVAL_TF, load_model, mixed_checkpoint
 
 TOP_K = 3
 
@@ -22,7 +22,7 @@ def predict(model, path):
 
 def main():
     parser = argparse.ArgumentParser()
-    parser.add_argument("--model", default=MIXED_CHECKPOINT)
+    parser.add_argument("--model", default=mixed_checkpoint(DEFAULT_ARCH))
     parser.add_argument("images", nargs="+")
     args = parser.parse_args()
     model = load_model(args.model)

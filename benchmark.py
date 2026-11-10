@@ -1,7 +1,7 @@
 """Evaluate one or more checkpoints on every benchmark: the test splits of trashnet, RealWaste and TACO,
 plus the Wikimedia Commons photos in data/commons_studio/ and data/commons_outdoor/ (never used for training).
 
-usage: python benchmark.py models/best_model.pth models/best_model_mixed.pth
+usage: python benchmark.py models/resnet50_base.pth models/resnet50_mixed.pth
 Writes results/benchmark_<checkpoint>.csv with one prediction per image.
 """
 import sys

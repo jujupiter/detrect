@@ -14,13 +14,13 @@ Build a trash detection and classification system, developed in phases:
 
 | File | Role | Reads | Writes |
 |---|---|---|---|
-| `common.py` | Shared code: classes, transforms, dataset, model, batch prediction, file paths | | |
+| `common.py` | Shared code: classes, transforms, dataset, models (`ARCHS`), checkpoints, batch prediction, file paths | | |
 | `download_data.sh` | Download trashnet | | `data/trashnet/` |
 | `split.py` | Split trashnet 70/15/15 | `data/trashnet/` | `data/splits_trashnet.csv` |
 | `download_commons.py` | Download the 40 Wikimedia Commons test photos, with fallbacks (see below) | `data/commons_*/sources.csv` | `data/commons_*/` |
 | `prepare_extra_data.py` | Download RealWaste and TACO, map them to the 6 classes, split them | | `data/realwaste/`, `data/taco/`, `data/splits_extra.csv` |
-| `train.py` | Train ResNet-18 on trashnet only, from ImageNet weights | `data/splits_trashnet.csv` | `models/best_model.pth` |
-| `train_mixed.py` | Fine-tune that model on trashnet + RealWaste + TACO, every batch mixing the three | both splits files, `models/best_model.pth` | `models/best_model_mixed.pth` |
+| `train.py` | Train a model (`--arch`, ResNet-50 by default) on trashnet only, from ImageNet weights | `data/splits_trashnet.csv` | `models/<arch>_base.pth` |
+| `train_mixed.py` | Fine-tune that model on trashnet + RealWaste + TACO, every batch mixing the three | both splits files, `models/<arch>_base.pth` | `models/<arch>_mixed.pth` |
 | `benchmark.py` | Score checkpoints on every test set | splits files, `data/commons_*` | `results/benchmark_<model>.csv` |
 | `predict.py` | Classify your own images (top 3) | a checkpoint | |
 
@@ -67,13 +67,19 @@ python prepare_extra_data.py          # ~700 MB RealWaste zip + ~1,000 TACO phot
 python download_commons.py            # 40 test photos, 8 MB
 
 # Training
-python train.py                       # trashnet only -> models/best_model.pth
-python train_mixed.py                 # + RealWaste and TACO -> models/best_model_mixed.pth
+python train.py                       # trashnet only -> models/resnet50_base.pth
+python train_mixed.py                 # + RealWaste and TACO -> models/resnet50_mixed.pth
+python train.py --arch resnet18       # any model from ARCHS in common.py, same for train_mixed.py
 
 # Evaluation
-python benchmark.py models/best_model.pth models/best_model_mixed.pth
-python predict.py path/to/photo.jpg   # uses models/best_model_mixed.pth unless --model is given
+python benchmark.py models/resnet50_base.pth models/resnet50_mixed.pth
+python predict.py path/to/photo.jpg   # uses models/resnet50_mixed.pth unless --model is given
 ```
+
+Models (`--arch`, all with ImageNet weights from torchvision): `resnet18`, `resnet50` (default),
+`efficientnet_b0`, `convnext_tiny`. Checkpoints store their architecture, so `benchmark.py` and `predict.py`
+work out the model to build by themselves. The first ResNet-18 checkpoints (`models/best_model*.pth`, saved
+before this) are plain weights and load as ResNet-18.
 
 On a CPU-only machine the data loaders run in the main process (`NUM_WORKERS` in `common.py`):
 worker processes there compete with training for the same cores, and on macOS they have hung the process.
