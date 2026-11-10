@@ -52,10 +52,27 @@ source .venv/bin/activate
 pip install -r requirements.txt
 ```
 
-PyTorch must be installed separately — use the official installer for your platform:
-https://pytorch.org/get-started/locally/
+`requirements.txt` pins PyTorch 2.2.2 and NumPy 1.x on Intel Macs only, because that is the last PyTorch
+built for them. Anywhere else it accepts any recent version and keeps one that is already installed. For
+a specific CUDA build, use the official installer: https://pytorch.org/get-started/locally/
 
 On Windows, activate with `.venv\Scripts\activate` instead.
+
+### On Kaggle
+
+Create a notebook, set Accelerator to a GPU and turn Internet on. PyTorch and the other packages are
+already installed. Then run:
+
+```bash
+!git -C detrect pull || git clone -b init https://github.com/jujupiter/detrect.git
+%cd detrect
+!bash download_data.sh && python prepare_extra_data.py && python download_commons.py
+!python train.py && python train_mixed.py
+!python benchmark.py models/resnet50_base.pth models/resnet50_mixed.pth
+```
+
+Committed runs ("Save & Run All") publish everything in `/kaggle/working` as output, datasets included.
+Keep the notebook private, or delete `data/` at the end of the run before making it public.
 
 ## Usage
 
@@ -75,6 +92,11 @@ python train.py --arch resnet18       # any model from ARCHS in common.py, same 
 python benchmark.py models/resnet50_base.pth models/resnet50_mixed.pth
 python predict.py path/to/photo.jpg   # uses models/resnet50_mixed.pth unless --model is given
 ```
+
+The data scripts only download what is missing, so they are safe to run again. Both splits files are
+committed, so every machine trains and tests on the same images: `split.py` and `prepare_extra_data.py`
+keep them unless given `--force` / `--resplit`. Images listed in a split that could not be downloaded
+(e.g. a TACO photo that was taken off Flickr) are skipped by training and benchmarking, with a message.
 
 Models (`--arch`, all with ImageNet weights from torchvision): `resnet18`, `resnet50` (default),
 `efficientnet_b0`, `convnext_tiny`. Checkpoints store their architecture, so `benchmark.py` and `predict.py`

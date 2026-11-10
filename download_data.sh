@@ -4,6 +4,11 @@ set -euo pipefail
 URL="https://github.com/garythung/trashnet/raw/master/data/dataset-resized.zip"
 ARCHIVE="dataset-resized.zip"
 
+if [ -n "$(find data/trashnet -name '*.jpg' -print -quit 2>/dev/null)" ]; then
+    echo "trashnet already in ./data/trashnet/, skipping download (delete that folder to download it again)"
+    exit 0
+fi
+
 echo "Downloading trashnet dataset..."
 curl -L -o "$ARCHIVE" "$URL"
 

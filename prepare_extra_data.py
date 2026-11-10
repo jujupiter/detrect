@@ -51,7 +51,8 @@ def fetch(url):
 
 
 def prepare_realwaste(out, zip_path=None):
-    if zip_path is None:
+    downloaded = zip_path is None
+    if downloaded:
         zip_path = Path("realwaste.zip")
         print("Downloading RealWaste (~690 MB)...")
         zip_path.write_bytes(fetch(REALWASTE_URL))
@@ -66,6 +67,8 @@ def prepare_realwaste(out, zip_path=None):
             dest.parent.mkdir(parents=True, exist_ok=True)
             dest.write_bytes(zf.read(name))
             rows.append((str(dest), label, "realwaste", ""))
+    if downloaded:
+        zip_path.unlink()
     return pd.DataFrame(rows, columns=["path", "label", "source", "group"])
 
 
@@ -135,10 +138,33 @@ def split(df):
     return df.drop(columns="group")
 
 
+def missing(df, source):
+    return (~df[df.source == source].path.map(lambda p: Path(p).exists())).sum()
+
+
 def main():
     parser = argparse.ArgumentParser()
     parser.add_argument("--realwaste-zip", type=Path, help="use an already downloaded realwaste.zip")
+    parser.add_argument("--resplit", action="store_true", help=f"make a new split and overwrite {EXTRA_SPLITS}")
     args = parser.parse_args()
+
+    # The split is committed to git: keep it, and only download the images it lists that are not here yet
+    if Path(EXTRA_SPLITS).exists() and not args.resplit:
+        df = pd.read_csv(EXTRA_SPLITS)
+        print(f"Keeping the existing {EXTRA_SPLITS} (use --resplit to make a new split)")
+        if missing(df, "realwaste"):
+            prepare_realwaste(Path("data/realwaste"), args.realwaste_zip)
+        else:
+            print("RealWaste already in data/realwaste/, skipping download")
+        if missing(df, "taco"):
+            prepare_taco(Path("data/taco"))  # skips the photos whose crops are already here
+        else:
+            print("TACO crops already in data/taco/, skipping download")
+        for source in ["realwaste", "taco"]:
+            if n := missing(df, source):
+                print(f"{n} {source} images could not be downloaded: training and benchmark.py skip them")
+        return
+
     realwaste = split(prepare_realwaste(Path("data/realwaste"), args.realwaste_zip))
     taco = split(prepare_taco(Path("data/taco")))
     df = pd.concat([realwaste, taco])

@@ -1,6 +1,11 @@
-numpy<2  # torch 2.2.2 (last Intel-macOS build) is compiled against NumPy 1.x
+# Intel Macs: torch 2.2.2 is the last build for them, and it is compiled against NumPy 1.x
+numpy<2; sys_platform == "darwin" and platform_machine == "x86_64"
+torch==2.2.2; sys_platform == "darwin" and platform_machine == "x86_64"
+torchvision==0.17.2; sys_platform == "darwin" and platform_machine == "x86_64"
+# Everywhere else (Apple Silicon, Linux, Windows, Kaggle): any recent version, and an installed one is kept
+numpy; sys_platform != "darwin" or platform_machine != "x86_64"
+torch; sys_platform != "darwin" or platform_machine != "x86_64"
+torchvision; sys_platform != "darwin" or platform_machine != "x86_64"
 pandas
 scikit-learn
 Pillow
-torch==2.2.2
-torchvision==0.17.2

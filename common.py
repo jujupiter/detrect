@@ -106,10 +106,19 @@ def load_model(path):
     return model.eval()
 
 
+def read_split_file(path):
+    """A splits CSV, without the images that are not on disk (e.g. TACO photos that failed to download)."""
+    df = pd.read_csv(path)
+    present = df.path.map(lambda p: Path(p).exists())
+    if not present.all():
+        print(f"{path}: skipping {(~present).sum()} images that are not on disk")
+    return df[present].reset_index(drop=True)
+
+
 def load_splits():
     """trashnet + RealWaste + TACO, with columns path, label, source, split."""
-    trashnet = pd.read_csv(TRASHNET_SPLITS).assign(source="trashnet")
-    extra = pd.read_csv(EXTRA_SPLITS)
+    trashnet = read_split_file(TRASHNET_SPLITS).assign(source="trashnet")
+    extra = read_split_file(EXTRA_SPLITS)
     return pd.concat([trashnet, extra], ignore_index=True)
 
 

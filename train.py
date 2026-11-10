@@ -4,13 +4,12 @@ usage: python train.py [--arch resnet50]
 """
 import argparse
 
-import pandas as pd
 import torch
 import torch.nn as nn
 from torch.utils.data import DataLoader
 
 from common import (ARCHS, DEFAULT_ARCH, DEVICE, EVAL_TF, NUM_WORKERS, TRAIN_TF, TRASHNET_SPLITS, TrashDataset,
-                    base_checkpoint, build_model, load_checkpoint, save_model)
+                    base_checkpoint, build_model, load_checkpoint, read_split_file, save_model)
 
 EPOCHS = 20
 BATCH_SIZE = 32
@@ -41,7 +40,7 @@ def main():
     args = parser.parse_args()
     checkpoint = base_checkpoint(args.arch)
 
-    df = pd.read_csv(TRASHNET_SPLITS)
+    df = read_split_file(TRASHNET_SPLITS)
     train_loader = DataLoader(TrashDataset(df[df.split == "train"], TRAIN_TF), batch_size=BATCH_SIZE, shuffle=True, num_workers=NUM_WORKERS)
     val_loader   = DataLoader(TrashDataset(df[df.split == "val"],   EVAL_TF),  batch_size=BATCH_SIZE, num_workers=NUM_WORKERS)
     test_loader  = DataLoader(TrashDataset(df[df.split == "test"],  EVAL_TF),  batch_size=BATCH_SIZE, num_workers=NUM_WORKERS)
