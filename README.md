@@ -64,6 +64,7 @@ Create a notebook, set Accelerator to a GPU and turn Internet on. PyTorch and th
 already installed. Then run:
 
 ```bash
+%cd /kaggle/working
 !git -C detrect pull || git clone -b init https://github.com/jujupiter/detrect.git
 %cd detrect
 !bash download_data.sh && python prepare_extra_data.py && python download_commons.py
