@@ -1,0 +1,61 @@
+taco_supercategory,taco_category,jcodes,jlist_names,material,match,note
+Aluminium foil,Aluminium foil,J177,"metal foil wrappers, aluminium foil",metal,exact,
+Battery,Battery,J195,metal household batteries,metal,exact,
+Blister pack,Aluminium blister pack,,,,none,closest is J100 pharmaceutical packaging
+Blister pack,Carded blister pack,,,,none,closest is J100 pharmaceutical packaging
+Bottle,Clear plastic bottle,J7 J8,plastic drink bottles ≤ 0.5 l | plastic drink bottles >0.5 l,artificial polymer materials,broader,size split (<=0.5 l / >0.5 l) dropped; assumed drink bottles
+Bottle,Glass bottle,J200,glass bottles,glass/ceramics,exact,
+Bottle,Other plastic bottle,,,,none,"could be drinks, cleaning, cosmetics or oil (J7-J15)"
+Bottle cap,Metal bottle cap,J178,"metal bottle caps, lids & pull tabs from cans",metal,merge,
+Bottle cap,Plastic bottle cap,J21,plastic caps/lids drinks,artificial polymer materials,exact,assumed caps of drink bottles
+Broken glass,Broken glass,J208,pieces of glass/ceramic (glass or ceramic fragments ≥ 2.5 cm),glass/ceramics,exact,
+Can,Aerosol,J174,metal aerosol/spray cans,metal,exact,
+Can,Drink can,J175,metal drinks cans,metal,exact,
+Can,Food Can,J176,metal food cans,metal,exact,
+Carton,Corrugated carton,J148,cardboard boxes,paper/cardboard,merge,
+Carton,Drink carton,J150 J151,paper cartons/Tetrapak milk | paper cartons/Tetrapak (non-milk),paper/cardboard,broader,milk / non-milk split dropped
+Carton,Egg carton,J247,other paper containers,paper/cardboard,exact,
+Carton,Meal carton,J245,"paper food trays, food wrappers, drink containers",paper/cardboard,exact,
+Carton,Other carton,,,,none,box (J148) or other container (J247)
+Carton,Pizza box,J148,cardboard boxes,paper/cardboard,merge,
+Carton,Toilet tube,J158,other paper items,paper/cardboard,merge,J158 is a catch-all
+Cigarette,Cigarette,J27,tobacco products with filters (cigarette butts with filters),artificial polymer materials,exact,
+Cup,Disposable plastic cup,J227,cups and lids of hard plastic,artificial polymer materials,merge,
+Cup,Foam cup,J226,cups and cup lids of foamed polystyrene,artificial polymer materials,exact,
+Cup,Glass cup,J203,glass and ceramic tableware (plates/cups/glasses),glass/ceramics,exact,
+Cup,Other plastic cup,J227,cups and lids of hard plastic,artificial polymer materials,merge,
+Cup,Paper cup,J244,paper cups,paper/cardboard,exact,
+Food waste,Food waste,J215,organic food waste,organic food waste,exact,
+Glass jar,Glass jar,J201,glass jars,glass/ceramics,exact,
+Lid,Metal lid,J178,"metal bottle caps, lids & pull tabs from cans",metal,merge,
+Lid,Plastic lid,,,,none,"could be a drink, chemical or cup lid (J21/J22/J23/J227)"
+Other plastic,Other plastic,,,,none,catch-all
+Paper,Magazine paper,J154,paper newspapers & magazines,paper/cardboard,exact,
+Paper,Normal paper,,,,none,fragment (J156) or other item (J158)
+Paper,Tissues,J158,other paper items,paper/cardboard,merge,J158 is a catch-all
+Paper,Wrapping paper,,,,none,fragment (J156) or other item (J158)
+Paper bag,Paper bag,J147,paper bags,paper/cardboard,merge,
+Paper bag,Plastified paper bag,J147,paper bags,paper/cardboard,merge,
+Plastic bag & wrapper,Crisp packet,J30,plastic crisps packets/sweets wrappers,artificial polymer materials,exact,
+Plastic bag & wrapper,Garbage bag,,,,none,no code for bin bags; J4 small bags or J67 sheeting
+Plastic bag & wrapper,Other plastic wrapper,,,,none,J30 covers crisp and sweet wrappers only
+Plastic bag & wrapper,Plastic film,,,,none,"could be bags, sheeting or wrappers (J4/J67/J30)"
+Plastic bag & wrapper,Polypropylene bag,,,,none,no matching code
+Plastic bag & wrapper,Single-use carrier bag,J3,plastic shopping/carrier/grocery bags,artificial polymer materials,exact,
+Plastic bag & wrapper,Six pack rings,J1,plastic 4/6-pack yokes & six-pack rings,artificial polymer materials,exact,
+Plastic container,Disposable food container,J225,plastic food containers made of hard non-foamed plastic,artificial polymer materials,merge,
+Plastic container,Foam food container,J224,plastic food containers made of foamed polystyrene,artificial polymer materials,exact,
+Plastic container,Other plastic container,,,,none,not necessarily for food
+Plastic container,Spread tub,J225,plastic food containers made of hard non-foamed plastic,artificial polymer materials,merge,
+Plastic container,Tupperware,J225,plastic food containers made of hard non-foamed plastic,artificial polymer materials,merge,"reusable, but still a hard plastic food container"
+Plastic glooves,Plastic glooves,J40 J41 J252,"plastic gloves (household/dishwashing, gardening) | plastic gloves (industrial/professional applications) | single-use plastic gloves",artificial polymer materials,broader,use split (household/industrial/single-use) dropped
+Plastic utensils,Plastic utensils,J228,plastic cutlery,artificial polymer materials,exact,
+Pop tab,Pop tab,J178,"metal bottle caps, lids & pull tabs from cans",metal,merge,
+Rope & strings,Rope & strings,J49 J242,plastic rope (diameter more than 1cm) | plastic string and cord (diameter less than 1cm) not from dolly ropes or unidentified,artificial polymer materials,broader,diameter split (1 cm) dropped
+Scrap metal,Scrap metal,J198 J199,other metal pieces 2.5cm  ≥ ≤  50cm | other metal pieces > 50cm,metal,broader,size split (50 cm) dropped
+Shoe,Shoe,J136 J138,footwear made of plastic - not flip flops | shoes & sandals made of leather and/or textile,artificial polymer materials / cloth/textile,broader,plastic or leather/textile footwear
+Squeezable tube,Squeezable tube,,,,none,cosmetics (J12) or pharmaceutical (J100)
+Straw,Paper straw,,,,none,no paper straw code
+Straw,Plastic straw,J231,plastic straws,artificial polymer materials,exact,
+Styrofoam piece,Styrofoam piece,J82 J83,fragments of foamed polystyrene 2.5 cm  ≥ ≤  50 cm | fragments of foamed polystyrene > 50cm,artificial polymer materials,broader,size split (50 cm) dropped
+Unlabeled litter,Unlabeled litter,,,,none,unlabelled
