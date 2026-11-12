@@ -1,0 +1,46 @@
+dataset,licence,category,jcodes,jlist_names,material,match,note
+Drinking Waste,CC0 1.0,AluCan,J175,metal drinks cans,metal,exact,
+Drinking Waste,CC0 1.0,Glass,J200,glass bottles,glass/ceramics,exact,
+Drinking Waste,CC0 1.0,PET,J7 J8,plastic drink bottles ≤ 0.5 l; plastic drink bottles >0.5 l,plastic,broader,size not labelled
+Drinking Waste,CC0 1.0,HDPEM,J8,plastic drink bottles >0.5 l,plastic,merge,"HDPE milk bottles, assumed over 0.5 l"
+FloatWaste,CC BY 4.0,Packaging,,,,none,too broad
+FloatWaste,CC BY 4.0,Other_packaging,,,,none,too broad
+FloatWaste,CC BY 4.0,S_bubblewrap,J67,"plastic sheets, industrial packaging, sheeting",plastic,broader,bubble wrap as plastic packaging sheet
+FloatWaste,CC BY 4.0,S_label,,,,none,no code for labels
+FloatWaste,CC BY 4.0,S_squeeze,,,,none,"cosmetics (J12), medical (J100) or food pouch"
+FloatWaste,CC BY 4.0,S_straw,J231,plastic straws,plastic,exact,
+FloatWaste,CC BY 4.0,PS_string,J242,plastic string and cord (diameter less than 1cm) not from dolly ropes or unidentified,plastic,merge,
+FloatWaste,CC BY 4.0,P_cardboard,J148,cardboard boxes,paper,merge,"cardboard, not only boxes"
+FloatWaste,CC BY 4.0,P_foodcontainer,J245,"paper food trays, food wrappers, drink containers",paper,merge,
+FloatWaste,CC BY 4.0,PH_cup,,,,none,prefix PH not defined in the README: paper (J244) or plastic (J227)
+FloatWaste,CC BY 4.0,H_packaging,,,,none,too broad
+FloatWaste,CC BY 4.0,H_beveragebottle,J7 J8,plastic drink bottles ≤ 0.5 l; plastic drink bottles >0.5 l,plastic,broader,size not labelled
+FloatWaste,CC BY 4.0,H_otherbottle,,,,none,"cleaning, cosmetics or oil (J9-J15)"
+FloatWaste,CC BY 4.0,H_plate/bowl,J229,plastic plates and trays,plastic,merge,
+FloatWaste,CC BY 4.0,H_utensil,J228,plastic cutlery,plastic,merge,
+FloatWaste,CC BY 4.0,DH_lid,,,,none,"drink, chemical or cup lid (J21/J22/J23/J227)"
+FloatWaste,CC BY 4.0,D_polystyrene,J82 J83,fragments of foamed polystyrene 2.5 cm  ≥ ≤  50 cm; fragments of foamed polystyrene > 50cm,plastic,broader,pieces and whole items
+FloatWaste,CC BY 4.0,M_beveragecan,J175,metal drinks cans,metal,exact,
+FloatWaste,CC BY 4.0,M_foodcan/tin,J176,metal food cans,metal,exact,
+FloatWaste,CC BY 4.0,M_aerosol,J174,metal aerosol/spray cans,metal,exact,
+FloatWaste,CC BY 4.0,R_ball/balloon,J125 J126,rubber balloons; rubber balls,rubber,broader,
+FloatWaste,CC BY 4.0,G_beveragebottle,J200,glass bottles,glass/ceramics,exact,
+FloatWaste,CC BY 4.0,F_facemask,J253,plastic single-use face-mask,plastic,merge,may include cloth masks
+FloatWaste,CC BY 4.0,T_wood/timber,J171 J172,other processed wooden items 2.5 cm ≥ ≤ 50 cm; other processed wooden items > 50cm,wood,broader,
+FloatWaste,CC BY 4.0,Other,,,,none,catch-all
+pLitterStreet,CC BY 4.0,litter,,,,none,generic
+pLitterStreet,CC BY 4.0,pile,,,,none,heap of several items
+pLitterStreet,CC BY 4.0,trash bin,,,,none,not litter
+pLitterStreet,CC BY 4.0,face mask,J253,plastic single-use face-mask,plastic,exact,
+pLitterStreet,CC BY 4.0,plastic bag,J3 J4,plastic shopping/carrier/grocery bags; small plastic bags,plastic,broader,
+pLitterStreet,CC BY 4.0,bottle,,,,none,material not labelled
+pLitterStreet,CC BY 4.0,cup,J226 J227 J244,cups and cup lids of foamed polystyrene; cups and lids of hard plastic; paper cups,plastic / paper,broader,material not labelled
+pLitterStreet,CC BY 4.0,rope,J49 J242,plastic rope (diameter more than 1cm); plastic string and cord (diameter less than 1cm) not from dolly ropes or unidentified,plastic,broader,
+pLitterStreet,CC BY 4.0,sachet,,,,none,no code for single-serve sachets
+pLitterStreet,CC BY 4.0,straw,J231,plastic straws,plastic,exact,
+AquaPlasticWaste,CC BY 4.0,bottle,J7 J8,plastic drink bottles ≤ 0.5 l; plastic drink bottles >0.5 l,plastic,broader,"plastic bottles, assumed drinks"
+AquaPlasticWaste,CC BY 4.0,cap,J21 J23,plastic caps/lids drinks; plastic caps/lids unidentified,plastic,broader,
+AquaPlasticWaste,CC BY 4.0,foam,J82 J83,fragments of foamed polystyrene 2.5 cm  ≥ ≤  50 cm; fragments of foamed polystyrene > 50cm,plastic,broader,
+AquaPlasticWaste,CC BY 4.0,polythene,,,,none,"bags, sheeting or wrappers (J3/J4/J67/J30)"
+AquaPlasticWaste,CC BY 4.0,shoe,J102 J136,plastic flip-flops; footwear made of plastic - not flip flops,plastic,broader,
+AquaPlasticWaste,CC BY 4.0,wrapper,,,,none,J30 covers crisp and sweet wrappers only
