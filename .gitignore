@@ -14,3 +14,5 @@ data/commons_*/*/
 models/
 # Commons candidates for the large test set: thumbnails only, the CSVs are kept
 data/commons_candidates/img/
+# training logs
+results/*.log
