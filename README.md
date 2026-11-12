@@ -21,8 +21,10 @@ Build a trash detection and classification system, developed in phases:
 | `prepare_extra_data.py` | Download RealWaste and TACO, map them to the 6 classes, split them | | `data/realwaste/`, `data/taco/`, `data/splits_extra.csv` |
 | `train.py` | Train a model (`--arch`, ResNet-50 by default) on trashnet only, from ImageNet weights | `data/splits_trashnet.csv` | `models/<arch>_base.pth` |
 | `train_mixed.py` | Fine-tune that model on trashnet + RealWaste + TACO, every batch mixing the three | both splits files, `models/<arch>_base.pth` | `models/<arch>_mixed.pth` |
-| `benchmark.py` | Score checkpoints on every test set | splits files, `data/commons_*` | `results/benchmark_<model>.csv` |
+| `benchmark.py` | Score checkpoints on every test set, with a confusion matrix per test set | splits files, `data/commons_*` | `results/benchmark_<model>.csv` |
 | `predict.py` | Classify your own images (top 3) | a checkpoint | |
+| `collect_commons.py` | Collect candidate photos from Commons for a large test set, by J-code | `data/commons_queries.csv`, `data/jlist.csv` | `data/commons_candidates/` |
+| `review_commons.py` | Review those candidates in the browser (class, J-code, studio or outdoor), then export them | `data/commons_candidates/` | `labels.csv`, `data/commons_large/` |
 
 ## Data
 
@@ -30,7 +32,7 @@ Build a trash detection and classification system, developed in phases:
 |---|---|---|---|
 | `data/trashnet/` | [trashnet](https://github.com/garythung/trashnet): ~2,500 items on a white background | see repo | no, `download_data.sh` |
 | `data/realwaste/` | [RealWaste](https://archive.ics.uci.edu/dataset/908/realwaste): 3,587 landfill items on concrete | CC BY 4.0 | no, `prepare_extra_data.py` |
-| `data/taco/` | Objects cropped from [TACO](http://tacodataset.org) litter photos | CC BY 4.0 | no, `prepare_extra_data.py` |
+| `data/taco/` | Objects cropped from [TACO](http://tacodataset.org) litter photos | annotations CC BY 4.0, images per photo (see `CREDITS.md`) | no, `prepare_extra_data.py` |
 | `data/commons_studio/` | 20 product-style photos from Wikimedia Commons | per photo, in `sources.csv` | `sources.csv` only, `download_commons.py` |
 | `data/commons_outdoor/` | 20 outdoor photos from Wikimedia Commons | per photo, in `sources.csv` | `sources.csv` only, `download_commons.py` |
 
@@ -43,6 +45,28 @@ then the Commons API (which follows renames and finds the recorded version if th
 then the Internet Archive. Photos it cannot get are reported and skipped by `benchmark.py`. A one-off
 `python download_commons.py --archive` saves a copy of every thumbnail to the Internet Archive, so that
 the last fallback has something to find.
+
+### J-codes
+
+Phase 2 uses the EU [Joint List of Litter Categories](https://doi.org/10.2760/127473) (JRC, 2021): 183 litter
+types, each with a J-code (J175 = metal drinks cans). `data/jlist.csv` is the full list, from the JRC spreadsheet.
+`data/taco_jcodes.csv` and `data/extra_jcodes.csv` map the classes of TACO and of four other datasets to it, with the
+quality of each match (exact, merge, broader, none).
+
+### Large Commons test set
+
+The 20-photo Commons sets are too small to compare models (one photo = 5 points). A larger one is built in two steps:
+
+```bash
+python collect_commons.py      # ~2,000 candidates from Commons categories listed per J-code, freely licensed only
+python review_commons.py       # check each photo in the browser, ~3 s per photo; stop and resume any time
+python review_commons.py --export   # accepted photos -> data/commons_large/sources.csv
+```
+
+## Licence and credits
+
+The code is under the MIT licence (`LICENSE`). The datasets keep their own licences: `CREDITS.md` lists them, with
+the credit to give wherever the data or a model trained on it is published.
 
 ## Setup
 
@@ -91,6 +115,7 @@ python train.py --arch resnet18       # any model from ARCHS in common.py, same 
 
 # Evaluation
 python benchmark.py models/resnet50_base.pth models/resnet50_mixed.pth
+python benchmark.py results/benchmark_resnet50_mixed.csv   # report again, with confusion matrices, no model run
 python predict.py path/to/photo.jpg   # uses models/resnet50_mixed.pth unless --model is given
 ```
 

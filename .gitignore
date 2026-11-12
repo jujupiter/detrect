@@ -12,3 +12,5 @@ data/commons_*/*/
 
 # trained checkpoints
 models/
+# Commons candidates for the large test set: thumbnails only, the CSVs are kept
+data/commons_candidates/img/

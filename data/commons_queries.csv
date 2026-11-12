@@ -1,0 +1,58 @@
+jcode,category,depth,max_files
+J1,Six packs,0,40
+J3,Plastic bags,1,40
+J7 J8,PET bottles,1,60
+J7 J8,Plastic bottles,1,60
+J21,Bottle caps,1,40
+J25,Cigarette packs,0,40
+J26,Lighters,0,40
+J27,Cigarette butts,1,60
+J30,Candy wrappers,0,30
+J31,Ice lollipops,0,20
+J95,Cotton swabs,0,40
+J98,Diapers,0,15
+J102,Flip-flops (footwear),0,40
+J125,Balloon releases,0,30
+J138,Shoes,0,30
+J147,Paper bags,0,40
+J147,Paper bags on ground,0,40
+J148,Cardboard boxes,0,50
+J148,Pizza boxes,1,40
+J148,Corrugated fiberboard,0,30
+J150 J151,Brick-shaped food and drink cartons,0,40
+J150,Milk cartons,0,40
+J154,Newspapers,0,30
+J174,Spray cans,0,40
+J175,Beverage cans,1,60
+J175,Aluminium cans,0,40
+J176,Canned food,0,40
+J177,Aluminium foil,0,40
+J178,Crown corks,0,30
+J178,Ring-pull tabs,0,30
+J195,Batteries,1,40
+J200,Glass bottles,1,60
+J200,Broken glass bottles on beaches,0,20
+J201,Glass jars,0,40
+J208,Broken glass,0,40
+J208,Shattered glass on the ground,0,30
+J215,Food waste,0,40
+J224,Expanded polystyrene food containers,0,40
+J224,Expanded polystyrene food boxes,0,30
+J226,Expanded polystyrene cups,0,30
+J227,Plastic cups (disposable),0,50
+J228,Plastic cutlery,1,40
+J231,Disposable plastic drinking straws,0,40
+J237,Wet wipes,0,40
+J244,Paper cups,0,40
+J244,Paper coffee cups,0,40
+J245,Food paper cartons,0,30
+J247,Egg cartons,0,40
+J252,Disposable gloves,0,40
+J253,Used protective masks during the COVID-19 pandemic,0,30
+J253,Littering of personal protective equipment during the COVID-19 pandemic,0,40
+J82 J83,Expanded polystyrene,0,30
+,Littering,1,80
+,Beach litter,1,60
+,Fast food litter,0,30
+,Branded litter,0,40
+,Litter picking,0,20
