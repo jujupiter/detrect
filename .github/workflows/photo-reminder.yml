@@ -1,0 +1,23 @@
+# Daily reminder to photograph litter (#15): comments on the issue every morning,
+# so the GitHub mobile app sends a notification. Cron is in UTC: 21:13 UTC is 8:13 in Sydney
+# in summer (AEDT), 7:13 in winter (AEST). "Run workflow" on the Actions tab sends one now.
+name: Photo reminder
+
+on:
+  schedule:
+    - cron: "13 21 * * *"
+  workflow_dispatch:
+
+permissions:
+  issues: write
+
+jobs:
+  remind:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Comment on #15
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          gh issue comment 15 --repo "$GITHUB_REPOSITORY" --body \
+            "@jujupiter Litter photos today? One item per photo, any class or J-code. See the checklist above."
