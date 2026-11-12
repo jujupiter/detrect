@@ -18,6 +18,7 @@ import argparse
 import hashlib
 import json
 import shutil
+import threading
 import webbrowser
 from datetime import datetime, timezone
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
@@ -41,15 +42,19 @@ def load_labels():
     return pd.DataFrame(columns=LABEL_COLUMNS)
 
 
+SAVING = threading.Lock()  # the server is threaded: two saves at once would each drop the other's row
+
+
 def save_label(row):
-    labels = load_labels()
-    labels = labels[labels.id != row["id"]]
     row = {k: str(row.get(k, "") or "") for k in LABEL_COLUMNS}
     row["reviewed_at"] = datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ")
-    labels = pd.concat([labels, pd.DataFrame([row])], ignore_index=True)
-    tmp = LABELS.with_suffix(".tmp")
-    labels.to_csv(tmp, index=False)
-    tmp.replace(LABELS)  # never leave a half-written file
+    with SAVING:
+        labels = load_labels()
+        labels = labels[labels.id != row["id"]]
+        labels = pd.concat([labels, pd.DataFrame([row])], ignore_index=True)
+        tmp = LABELS.with_suffix(".tmp")
+        labels.to_csv(tmp, index=False)
+        tmp.replace(LABELS)  # never leave a half-written file
 
 
 def page_data():
@@ -101,6 +106,8 @@ def export():
     """Accepted photos -> data/commons_large/<class>/<id>.jpg and sources.csv, in the format of the small sets."""
     cands = pd.read_csv(CANDIDATES, dtype=str).fillna("").set_index("id")
     labels = load_labels().query("status == 'accepted'")
+    if labels.empty:
+        return print(f"No accepted photo in {LABELS} yet: nothing to export.")
     rows = []
     for r in labels.itertuples():
         c = cands.loc[r.id]
@@ -216,7 +223,7 @@ function show() {
 }
 function draw() {
   document.querySelectorAll("#classes button").forEach(b => b.classList.toggle("on", b.dataset.label === (cur.label || "")));
-  $("jname").textContent = names[cur.jcode] || (cur.jcode ? "unknown code" : "no J-code");
+  $("jname").textContent = names[cur.jcode] || (cur.jcode ? "unknown code: pick one from the list" : "no J-code");
 }
 function tally() {
   const ls = Object.values(D.labels), n = D.candidates.length;
@@ -225,21 +232,34 @@ function tally() {
   $("progress").style.width = `${100 * ls.length / n}%`;
   $("tally").textContent = `${ls.length} reviewed · ${acc.length} accepted (${acc.filter(l => l.setting === "studio").length} studio, ${acc.filter(l => l.setting === "outdoor").length} outdoor)`;
 }
+let busy = false;  // a second key press while saving would skip a photo
 async function decide(status, setting = "") {
-  cur.jcode = $("jcode").value.trim().toUpperCase();
-  const row = { id: D.candidates[i].id, status, setting, label: status === "accepted" ? cur.label : "", jcode: status === "accepted" ? cur.jcode : "" };
-  const r = await fetch("/label", { method: "POST", body: JSON.stringify(row) });
-  if (!r.ok) { alert("Not saved: " + await r.text()); return; }
-  D.labels[row.id] = row;
-  if (i < D.candidates.length - 1) i++;
-  show();
+  if (busy) return;
+  busy = true;
+  try {
+    const row = { id: D.candidates[i].id, status, setting, label: status === "accepted" ? cur.label : "", jcode: status === "accepted" ? cur.jcode : "" };
+    const r = await fetch("/label", { method: "POST", body: JSON.stringify(row) });
+    if (!r.ok) { alert("Not saved: " + await r.text()); return; }
+    D.labels[row.id] = row;
+    if (i < D.candidates.length - 1) i++;
+    show();
+  } catch (err) { alert("Not saved (is review_commons.py still running?): " + err); }
+  finally { busy = false; }
+}
+// a code ("j175"), or words from a name ("drinks cans"): a single match becomes its code
+function findJcode(text) {
+  const t = text.trim().toUpperCase();
+  if (!t || names[t]) return t;
+  const words = text.toLowerCase().split(/\s+/).filter(Boolean);
+  const hits = D.jlist.filter(j => words.every(w => j.name.toLowerCase().includes(w)));
+  return hits.length === 1 ? hits[0].jcode : t;
 }
 const esc = s => s.replace(/[&<>"]/g, ch => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[ch]));
 $("studio").onclick = () => decide("accepted", "studio");
 $("outdoor").onclick = () => decide("accepted", "outdoor");
 $("reject").onclick = () => decide("rejected");
 $("multiple").onclick = () => decide("multiple");
-$("jcode").addEventListener("change", () => { cur.jcode = $("jcode").value.trim().toUpperCase().split(" ")[0]; $("jcode").value = cur.jcode; draw(); });
+$("jcode").addEventListener("change", () => { cur.jcode = findJcode($("jcode").value); $("jcode").value = cur.jcode; draw(); });
 $("jcode").addEventListener("keydown", e => { if (e.key === "Enter" || e.key === "Escape") { $("jcode").dispatchEvent(new Event("change")); $("jcode").blur(); } e.stopPropagation(); });
 document.addEventListener("keydown", e => {
   if (e.metaKey || e.ctrlKey || e.altKey) return;
