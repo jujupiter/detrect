@@ -63,6 +63,7 @@ The 20-photo Commons sets are too small to compare models (one photo = 5 points)
 python collect_commons.py      # ~2,000 candidates from Commons categories listed per J-code, freely licensed only
 python review_commons.py       # check each photo in the browser, ~3 s per photo; stop and resume any time
 python review_commons.py --export   # accepted photos -> data/commons_large/sources.csv
+python review_commons.py --multiple # confirm the photos suggested as several materials (for detection, #10)
 ```
 
 `data/commons_candidates/suggestions.csv` holds a first pass by Claude (accept or reject, class, J-code, setting,
