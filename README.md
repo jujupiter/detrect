@@ -19,8 +19,7 @@ Build a trash detection and classification system, developed in phases:
 | `split.py` | Split trashnet 70/15/15 | `data/trashnet/` | `data/splits_trashnet.csv` |
 | `download_commons.py` | Download the Wikimedia Commons test photos (40 + 537), with fallbacks (see below) | `data/commons_*/sources.csv` | `data/commons_*/` |
 | `prepare_extra_data.py` | Download RealWaste and TACO, map them to the 6 classes, split them | | `data/realwaste/`, `data/taco/`, `data/splits_extra.csv` |
-| `train.py` | Train a model (`--arch`, ResNet-50 by default) on trashnet only, from ImageNet weights | `data/splits_trashnet.csv` | `models/<arch>_base.pth` |
-| `train_mixed.py` | Fine-tune that model on trashnet + RealWaste + TACO, every batch mixing the three | both splits files, `models/<arch>_base.pth` | `models/<arch>_mixed.pth` |
+| `train_mixed.py` | Train a model (`--arch`, ResNet-50 by default) on trashnet + RealWaste + TACO from ImageNet weights, every batch mixing the three | both splits files | `models/<arch>_mixed.pth` |
 | `benchmark.py` | Score checkpoints on every test set, with a confusion matrix per test set | splits files, `data/commons_*` | `results/benchmark_<model>.csv` |
 | `predict.py` | Classify your own images (top 3) | a checkpoint | |
 | `collect_commons.py` | Collect candidate photos from Commons for a large test set, by J-code | `data/commons_queries.csv`, `data/jlist.csv` | `data/commons_candidates/` |
@@ -77,7 +76,7 @@ Its 16 photos with no class (drink cartons, food waste) have a J-code only and a
 
 ## Energy
 
-`train.py`, `train_mixed.py` and `benchmark.py` measure their own runs with CodeCarbon and add a row to
+`train_mixed.py` and `benchmark.py` measure their own runs with CodeCarbon and add a row to
 `results/runs.csv`: date, script, model, outcome, duration, hardware, kWh and gCO₂e. Every run is logged,
 including failed (an error) and aborted (Ctrl+C) ones; change the outcome to `discarded` by hand when a model
 is not kept. CodeCarbon runs offline and calls no outside service. The carbon intensity of the electricity
@@ -116,8 +115,8 @@ already installed. Then run:
 %cd lilitter
 !pip install -q codecarbon==3.3.2
 !bash download_data.sh && python prepare_extra_data.py && python download_commons.py
-!python train.py && python train_mixed.py
-!python benchmark.py models/resnet50_base.pth models/resnet50_mixed.pth
+!python train_mixed.py
+!python benchmark.py models/resnet50_mixed.pth
 ```
 
 Each run's energy is added to `results/runs.csv` in the notebook. Copy its new rows into the repository's
@@ -136,15 +135,18 @@ python prepare_extra_data.py          # ~700 MB RealWaste zip + ~1,000 TACO phot
 python download_commons.py            # 577 test photos, about 120 MB
 
 # Training
-python train.py                       # trashnet only -> models/resnet50_base.pth
-python train_mixed.py                 # + RealWaste and TACO -> models/resnet50_mixed.pth
-python train.py --arch resnet18       # any model from ARCHS in common.py, same for train_mixed.py
+python train_mixed.py                 # trashnet + RealWaste + TACO -> models/resnet50_mixed.pth
+python train_mixed.py --arch resnet18 # any model from ARCHS in common.py
 
 # Evaluation
-python benchmark.py models/resnet50_base.pth models/resnet50_mixed.pth
+python benchmark.py models/resnet50_mixed.pth
 python benchmark.py results/benchmark_resnet50_mixed.csv   # report again, with confusion matrices, no model run
 python predict.py path/to/photo.jpg   # uses models/resnet50_mixed.pth unless --model is given
 ```
+
+Until November 2026 a model took two runs: one on trashnet alone (the "base" model), then a fine-tuning on all
+three datasets. Their results stay in `results/` for comparison: `benchmark_resnet50_base.csv` and
+`benchmark_resnet50_mixed_from_base.csv`.
 
 The data scripts only download what is missing, so they are safe to run again. Both splits files are
 committed, so every machine trains and tests on the same images: `split.py` and `prepare_extra_data.py`
