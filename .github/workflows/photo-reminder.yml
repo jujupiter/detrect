@@ -18,6 +18,17 @@ jobs:
       - name: Comment on #15
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        # one tip per day, in turn
         run: |
+          tips=(
+            "One item per photo, left where you found it: don't move it to a clean background."
+            "Vary the ground, the light and the distance: grass, asphalt, sand, shade, close-up and from standing height."
+            "Look for the rarer classes: paper, cardboard and glass, not only bottles and cans."
+            "Common J-codes worth photographing: cigarette butts (J27), bottle caps (J21), crisp packets (J30), drink cans (J175)."
+            "More J-codes we lack: wet wipes (J237), lolly sticks (J31), cotton bud sticks (J95), dog-poo bags (J101), batteries (J195)."
+            "Keep faces and number plates out of the frame."
+            "First goal: 25 photos per class (150), as a test set from Australia."
+          )
+          tip=${tips[$(( $(date +%j | sed 's/^0*//') % ${#tips[@]} ))]}
           gh issue comment 15 --repo "$GITHUB_REPOSITORY" --body \
-            "@jujupiter Litter photos today? One item per photo, any class or J-code. See the checklist above."
+            "@jujupiter Litter photos today? Tip: $tip"
