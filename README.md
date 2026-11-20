@@ -10,6 +10,15 @@ Build a trash detection and classification system, developed in phases:
 2. **Richer categories** — finer-grained labels beyond the 6 trashnet classes
 3. **Multi-object detection** — multiple pieces of trash per image with bounding boxes
 
+**Phase 1 is done when** a model reaches, on the large Commons test sets (photos never used for training):
+
+| Test set | Target | Now (`resnet50_mixed`) |
+|---|---|---|
+| `commons large studio` (331 photos, ±5 points) | 80% | 51% |
+| `commons large outdoor` (190 photos, ±7 points) | 70% | 44% |
+
+with no class far below the others. Every test set is still reported, including the weak ones.
+
 ## What each file does
 
 | File | Role | Reads | Writes |
