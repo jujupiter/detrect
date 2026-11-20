@@ -84,3 +84,5 @@ gCO₂e per training run of a kept model, and later per photo classified in the 
 - Scripts only download what is missing, so they are safe to run again.
 - New script, data file or option → update `README.md` in the same commit.
 - `init` is the main branch (Kaggle clones it). Commit messages: a short summary line, then what changed and why.
+- One ticket and one branch per task, merged into `init` by pull request: follow the `new-task` skill
+  (`.claude/skills/new-task/`), and confirm the plan with the user before creating the ticket.
