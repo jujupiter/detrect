@@ -4,12 +4,21 @@ For each photo, confirm or correct the suggested class (one of the 6) and J-code
 studio photo (plain or indoor background, item on its own) or an outdoor one (litter where it was found).
 Every decision is saved at once in data/commons_candidates/labels.csv, so a review can stop and resume any time.
 
-Keys:  s / o      accept as studio / outdoor, go to the next photo
+Rules: several items of the same material can be accepted as one class (leave the J-code empty if they differ);
+several materials -> m. A J-code only when it is clear (J7 is a drink bottle <= 0.5 l, J8 > 0.5 l).
+
+If data/commons_candidates/suggestions.csv exists (Claude's first pass: status, class, J-code, setting, reason),
+only the photos it suggests accepting are shown, pre-filled; press a to show every photo. A suggestion is never
+a label: only what you confirm is written to labels.csv.
+
+Keys:  Enter      accept as pre-filled (class, J-code, studio or outdoor), go to the next photo
+       s / o      accept as studio / outdoor, go to the next photo
        1-6, 0     class: cardboard, glass, metal, paper, plastic, trash; 0 = none of them (ambiguous)
        j          edit the J-code (type a code or words from its name, Enter to confirm)
        x          reject (not a usable photo of litter)
-       m          reject: several items (kept apart, useful for the detection phase)
+       m          reject: several materials (a litter scene kept apart for the detection phase)
        ← →        previous / next photo        u   jump to the first photo not reviewed yet
+       a          show every photo / only the suggested ones
 
 usage: python review_commons.py            open the review page on http://127.0.0.1:8765
        python review_commons.py --export   write the accepted photos to data/commons_large/ for benchmark.py
@@ -31,6 +40,7 @@ from common import CLASSES
 DIR = Path("data/commons_candidates")
 CANDIDATES = DIR / "candidates.csv"
 LABELS = DIR / "labels.csv"
+SUGGESTIONS = DIR / "suggestions.csv"
 EXPORT = Path("data/commons_large")
 LABEL_COLUMNS = ["id", "status", "label", "jcode", "setting", "reviewed_at"]
 PORT = 8765
@@ -64,6 +74,8 @@ def page_data():
                 candidates=cands[["id", "title", "source", "license", "artist", "query_category",
                                   "suggested_label", "suggested_jcode"]].to_dict("records"),
                 labels={r["id"]: r for r in load_labels().to_dict("records")},
+                suggestions=({r["id"]: r for r in pd.read_csv(SUGGESTIONS, dtype=str).fillna("").to_dict("records")}
+                             if SUGGESTIONS.exists() else {}),
                 jlist=jlist[["jcode", "name", "material"]].to_dict("records"))
 
 
@@ -190,9 +202,12 @@ a { color:var(--accent); }
       <button id="outdoor"><kbd>o</kbd> accept: outdoor</button></div>
       <div class="row" style="margin-top:6px">
       <button id="reject"><kbd>x</kbd> reject</button>
-      <button id="multiple"><kbd>m</kbd> several items</button></div></div>
-    <div class="muted"><kbd>←</kbd> <kbd>→</kbd> previous / next, <kbd>u</kbd> first not reviewed.
-      Studio: item on its own, plain or indoor background. Outdoor: litter where it was found.</div>
+      <button id="multiple"><kbd>m</kbd> several materials</button></div>
+      <div class="row" style="margin-top:6px"><button id="asis"><kbd>Enter</kbd> accept as pre-filled</button></div></div>
+    <div class="muted"><kbd>←</kbd> <kbd>→</kbd> previous / next, <kbd>u</kbd> first not reviewed,
+      <kbd>a</kbd> <span id="mode"></span>.
+      Studio: item on its own, plain or indoor background. Outdoor: litter where it was found.
+      Several items of one material: accept them as one class.</div>
   </aside>
 </main>
 <script>
@@ -206,20 +221,33 @@ async function load() {
   D.classes.concat(["(none)"]).forEach((c, k) => { const b = document.createElement("button");
     b.dataset.label = k < 6 ? c : ""; b.innerHTML = `<kbd>${k < 6 ? k + 1 : 0}</kbd> ${c}`;
     b.onclick = () => { cur.label = b.dataset.label; draw(); }; $("classes").append(b); });
+  showAll = !Object.keys(D.suggestions).length;
   i = firstTodo(); show();
 }
-const firstTodo = () => { const k = D.candidates.findIndex(c => !D.labels[c.id]); return k < 0 ? 0 : k; };
+// with suggestions, only show what Claude would accept (and what you already reviewed), unless showAll
+let showAll = false;
+const visible = c => showAll || !!D.labels[c.id] || (D.suggestions[c.id] || {}).status === "accepted";
+const waiting = () => D.candidates.filter(c => !D.labels[c.id] && visible(c)).length;
+function step(from, dir) {
+  for (let k = from + dir; k >= 0 && k < D.candidates.length; k += dir) if (visible(D.candidates[k])) return k;
+  return -1;
+}
+const firstTodo = () => { const k = D.candidates.findIndex(c => !D.labels[c.id] && visible(c)); return k < 0 ? i : k; };
 function show() {
-  const c = D.candidates[i], l = D.labels[c.id];
-  cur = l ? { label: l.label, jcode: l.jcode } : { label: c.suggested_label, jcode: c.suggested_jcode.split(" ")[0] || "" };
-  // a suggestion with several codes (e.g. "J7 J8") keeps them all as a hint, the first is pre-filled
+  const c = D.candidates[i], l = D.labels[c.id], s = D.suggestions[c.id];
+  cur = l ? { label: l.label, jcode: l.jcode, setting: l.setting }
+    : s && s.status === "accepted" ? { label: s.label, jcode: s.jcode, setting: s.setting }
+    : { label: c.suggested_label, jcode: c.suggested_jcode.split(" ")[0] || "", setting: "" };
+  // a query suggestion with several codes (e.g. "J7 J8") keeps them all as a hint, the first is pre-filled
   $("img").src = `/img/${c.id}.jpg`;
   $("title").innerHTML = `<a href="${c.source}" target="_blank" rel="noopener">${esc(c.title)}</a>`;
   $("meta").textContent = `${c.license} · ${c.artist.slice(0, 80)} · from “${c.query_category}”` +
     (c.suggested_jcode.includes(" ") ? ` · suggested ${c.suggested_jcode}` : "");
-  $("state").innerHTML = l ? `<span class="status ${l.status}">${l.status}</span>${l.setting ? " · " + l.setting : ""}` : "not reviewed";
+  $("state").innerHTML = (l ? `<span class="status ${l.status}">${l.status}</span>${l.setting ? " · " + l.setting : ""}` : "not reviewed") +
+    (s ? `<br>Claude: ${esc([s.status, s.label, s.jcode, s.setting].filter(Boolean).join(" · "))} (${esc(s.confidence)}): ${esc(s.reason)}` : "");
+  $("mode").textContent = showAll ? "only Claude's suggested photos" : "every photo";
   $("jcode").value = cur.jcode; draw(); tally();
-  const next = D.candidates[i + 1]; if (next) new Image().src = `/img/${next.id}.jpg`;
+  const next = D.candidates[step(i, 1)]; if (next) new Image().src = `/img/${next.id}.jpg`;
 }
 function draw() {
   document.querySelectorAll("#classes button").forEach(b => b.classList.toggle("on", b.dataset.label === (cur.label || "")));
@@ -230,7 +258,8 @@ function tally() {
   const acc = ls.filter(l => l.status === "accepted");
   $("count").textContent = `${i + 1} / ${n}`;
   $("progress").style.width = `${100 * ls.length / n}%`;
-  $("tally").textContent = `${ls.length} reviewed · ${acc.length} accepted (${acc.filter(l => l.setting === "studio").length} studio, ${acc.filter(l => l.setting === "outdoor").length} outdoor)`;
+  $("tally").textContent = `${ls.length} reviewed · ${acc.length} accepted (${acc.filter(l => l.setting === "studio").length} studio, ${acc.filter(l => l.setting === "outdoor").length} outdoor)` +
+    (showAll ? "" : ` · ${waiting()} suggested to go`);
 }
 let busy = false;  // a second key press while saving would skip a photo
 async function decide(status, setting = "") {
@@ -241,7 +270,9 @@ async function decide(status, setting = "") {
     const r = await fetch("/label", { method: "POST", body: JSON.stringify(row) });
     if (!r.ok) { alert("Not saved: " + await r.text()); return; }
     D.labels[row.id] = row;
-    if (i < D.candidates.length - 1) i++;
+    const k = step(i, 1);
+    if (k < 0) alert("No more photos to review for now (reload later: Claude may have suggested more).");
+    else i = k;
     show();
   } catch (err) { alert("Not saved (is review_commons.py still running?): " + err); }
   finally { busy = false; }
@@ -259,6 +290,8 @@ $("studio").onclick = () => decide("accepted", "studio");
 $("outdoor").onclick = () => decide("accepted", "outdoor");
 $("reject").onclick = () => decide("rejected");
 $("multiple").onclick = () => decide("multiple");
+const asis = () => decide("accepted", cur.setting || "studio");
+$("asis").onclick = asis;
 $("jcode").addEventListener("change", () => { cur.jcode = findJcode($("jcode").value); $("jcode").value = cur.jcode; draw(); });
 $("jcode").addEventListener("keydown", e => { if (e.key === "Enter" || e.key === "Escape") { $("jcode").dispatchEvent(new Event("change")); $("jcode").blur(); } e.stopPropagation(); });
 document.addEventListener("keydown", e => {
@@ -270,10 +303,12 @@ document.addEventListener("keydown", e => {
   else if (k === "o") decide("accepted", "outdoor");
   else if (k === "x") decide("rejected");
   else if (k === "m") decide("multiple");
+  else if (k === "Enter") asis();
   else if (k === "j") { e.preventDefault(); $("jcode").select(); }
-  else if (k === "ArrowLeft" && i > 0) { i--; show(); }
-  else if (k === "ArrowRight" && i < D.candidates.length - 1) { i++; show(); }
+  else if (k === "ArrowLeft" && step(i, -1) >= 0) { i = step(i, -1); show(); }
+  else if (k === "ArrowRight" && step(i, 1) >= 0) { i = step(i, 1); show(); }
   else if (k === "u") { i = firstTodo(); show(); }
+  else if (k === "a") { showAll = !showAll; if (!visible(D.candidates[i])) i = firstTodo(); show(); }
 });
 load();
 </script></body></html>

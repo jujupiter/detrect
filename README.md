@@ -24,7 +24,7 @@ Build a trash detection and classification system, developed in phases:
 | `benchmark.py` | Score checkpoints on every test set, with a confusion matrix per test set | splits files, `data/commons_*` | `results/benchmark_<model>.csv` |
 | `predict.py` | Classify your own images (top 3) | a checkpoint | |
 | `collect_commons.py` | Collect candidate photos from Commons for a large test set, by J-code | `data/commons_queries.csv`, `data/jlist.csv` | `data/commons_candidates/` |
-| `review_commons.py` | Review those candidates in the browser (class, J-code, studio or outdoor), then export them | `data/commons_candidates/` | `labels.csv`, `data/commons_large/` |
+| `review_commons.py` | Review those candidates in the browser (class, J-code, studio or outdoor), then export them | `data/commons_candidates/` (with `suggestions.csv` if present) | `labels.csv`, `data/commons_large/` |
 | `.github/workflows/photo-reminder.yml` | Comment on #15 every morning, as a reminder to photograph litter | | a comment on #15 |
 
 ## Data
@@ -63,6 +63,12 @@ python collect_commons.py      # ~2,000 candidates from Commons categories liste
 python review_commons.py       # check each photo in the browser, ~3 s per photo; stop and resume any time
 python review_commons.py --export   # accepted photos -> data/commons_large/sources.csv
 ```
+
+`data/commons_candidates/suggestions.csv` holds a first pass by Claude (accept or reject, class, J-code, setting,
+reason). When it exists, the review page only shows the photos it suggests accepting, pre-filled (`a` shows them all).
+Only what a person confirms goes into `labels.csv`. On a 100-photo pilot, Claude and the reviewer agreed on 76 photos
+whether to keep each one, and on every class where both accepted it; most of the disagreements came from the two rules
+now in the page (several items of one material are accepted; several materials are kept for detection).
 
 ## Licence and credits
 
