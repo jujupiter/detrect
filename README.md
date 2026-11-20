@@ -30,6 +30,7 @@ with no class far below the others. Every test set is still reported, including 
 | `prepare_extra_data.py` | Download RealWaste and TACO, map them to the 6 classes, split them | | `data/realwaste/`, `data/taco/`, `data/splits_extra.csv` |
 | `train_mixed.py` | Train a model (`--arch`, ResNet-50 by default) on trashnet + RealWaste + TACO from ImageNet weights, every batch mixing the three | both splits files | `models/<arch>_mixed.pth` |
 | `benchmark.py` | Score checkpoints on every test set, with a confusion matrix per test set | splits files, `data/commons_*` | `results/benchmark_<model>.csv` |
+| `zero_shot.py` | Score a CLIP or SigLIP model on every test set with no training: it picks the class whose description fits best | splits files, `data/commons_*` | `results/benchmark_zeroshot_<model>.csv` |
 | `predict.py` | Classify your own images (top 3) | a checkpoint | |
 | `collect_commons.py` | Collect candidate photos from Commons for a large test set, by J-code | `data/commons_queries.csv`, `data/jlist.csv` | `data/commons_candidates/` |
 | `review_commons.py` | Review those candidates in the browser (class, J-code, studio or outdoor), then export them | `data/commons_candidates/` (with `suggestions.csv` if present) | `labels.csv`, `data/commons_large/` |
@@ -162,8 +163,9 @@ committed, so every machine trains and tests on the same images: `split.py` and 
 keep them unless given `--force` / `--resplit`. Images listed in a split that could not be downloaded
 (e.g. a TACO photo that was taken off Flickr) are skipped by training and benchmarking, with a message.
 
-Models (`--arch`, all with ImageNet weights from torchvision): `resnet18`, `resnet50` (default),
-`efficientnet_b0`, `convnext_tiny`. Checkpoints store their architecture, so `benchmark.py` and `predict.py`
+Models (`--arch`): `resnet18`, `resnet50` (default), `efficientnet_b0`, `convnext_tiny` with ImageNet weights from
+torchvision, and `dinov2_small`, `dinov2_base` from Hugging Face (Apache 2.0, safetensors weights; train them with
+a lower rate, e.g. `--lr 2e-5`). Checkpoints store their architecture, so `benchmark.py` and `predict.py`
 work out the model to build by themselves. The first ResNet-18 checkpoints (`models/best_model*.pth`, saved
 before this) are plain weights and load as ResNet-18.
 

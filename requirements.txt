@@ -13,3 +13,8 @@ Pillow
 codecarbon==3.3.2
 # Intel Macs: cryptography, pulled in by codecarbon, has no ready-made build for them after version 48
 cryptography<49; sys_platform == "darwin" and platform_machine == "x86_64"
+# DINOv2 (common.py) and zero-shot CLIP / SigLIP (zero_shot.py). 4.57 is the last version that accepts torch 2.2,
+# the last PyTorch for Intel Macs
+transformers==4.57.6
+# SigLIP's text tokenizer (zero_shot.py)
+sentencepiece

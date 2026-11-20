@@ -4,3 +4,8 @@ date,script,model,outcome,duration_s,hardware,energy_kwh,emissions_gco2e,locatio
 2026-11-20T10:41:13Z,check: Kaggle checkpoint on 40 photos,models/resnet50_mixed.pth,done,17,Intel(R) Core(TM) i5-8279U CPU @ 2.40GHz,0.000126,0.060,world average
 2026-11-20T11:25:24Z,train_mixed.py,models/efficientnet_b0_mixed.pth,done,579,2 x Tesla T4,0.015789,7.500,world average
 2026-11-20T11:25:38Z,benchmark.py,models/efficientnet_b0_mixed.pth,done,8,2 x Tesla T4,0.000174,0.083,world average
+2026-11-20T11:50:17Z,zero_shot.py,google/siglip-base-patch16-224,failed,371,Intel(R) Core(TM) i5-8279U CPU @ 2.40GHz,0.001354,0.743,AUS
+2026-11-20T11:55:17Z,zero_shot.py,openai/clip-vit-base-patch32,done,278,Intel(R) Core(TM) i5-8279U CPU @ 2.40GHz,0.001044,0.573,AUS
+2026-11-20T12:02:28Z,zero_shot.py,google/siglip-base-patch16-224,done,371,Intel(R) Core(TM) i5-8279U CPU @ 2.40GHz,0.001674,0.918,AUS
+2026-11-20T12:11:56Z,train_mixed.py,models/dinov2_small_mixed.pth,done,931,2 x Tesla T4,0.025761,12.236,world average
+2026-11-20T12:12:23Z,benchmark.py,models/dinov2_small_mixed.pth,done,19,2 x Tesla T4,0.000433,0.206,world average
