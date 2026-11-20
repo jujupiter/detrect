@@ -1,7 +1,7 @@
 """Train a model on trashnet + RealWaste + TACO from ImageNet weights, with every batch mixing the three sources.
 
 Run prepare_extra_data.py first. Saves models/<arch>_mixed.pth.
-usage: python train_mixed.py [--arch resnet50] [--epochs 20] [--patience 4]
+usage: python train_mixed.py [--arch resnet50] [--epochs 20] [--patience 4] [--lr 1e-4]
 """
 import argparse
 import random
@@ -16,7 +16,7 @@ from common import (measured_run, ARCHS, DEFAULT_ARCH, DEVICE, NUM_WORKERS, TRAI
 
 # images per source in every batch of 32
 BATCH_MIX = {"trashnet": 12, "realwaste": 10, "taco": 10}
-LR = 1e-4
+LR = 1e-4  # transformers (dinov2_*) are usually fine-tuned with a lower rate, e.g. --lr 2e-5
 
 
 class MixedBatchSampler(Sampler):
@@ -57,6 +57,7 @@ def main():
     parser.add_argument("--arch", default=DEFAULT_ARCH, choices=ARCHS)
     parser.add_argument("--epochs", type=int, default=20, help="maximum number of epochs")
     parser.add_argument("--patience", type=int, default=4, help="stop after this many epochs without improvement")
+    parser.add_argument("--lr", type=float, default=LR, help="learning rate")
     args = parser.parse_args()
     out = mixed_checkpoint(args.arch)
     with measured_run("train_mixed.py", out):
@@ -70,7 +71,7 @@ def main():
 
         model = build_model(args.arch)  # ImageNet weights, new 6-class head
         criterion = nn.CrossEntropyLoss()
-        optimizer = torch.optim.Adam(model.parameters(), lr=LR)
+        optimizer = torch.optim.Adam(model.parameters(), lr=args.lr)
 
         acc = evaluate(model, val)
         print("Before training | val acc " + " ".join(f"{s} {a:.3f}" for s, a in acc.items()), flush=True)

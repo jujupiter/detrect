@@ -35,6 +35,9 @@ ARCHS = {
     "resnet50": (models.resnet50, models.ResNet50_Weights.DEFAULT),                 # 25.6M params, 4.1 GFLOPs
     "efficientnet_b0": (models.efficientnet_b0, models.EfficientNet_B0_Weights.DEFAULT),  # 5.3M params, 0.4 GFLOPs
     "convnext_tiny": (models.convnext_tiny, models.ConvNeXt_Tiny_Weights.DEFAULT),  # 28.6M params, 4.5 GFLOPs
+    # DINOv2 (Apache 2.0) from Hugging Face, weights in safetensors only: self-supervised, strong on unfamiliar photos
+    "dinov2_small": "facebook/dinov2-small",                                        # 22M params
+    "dinov2_base": "facebook/dinov2-base",                                          # 86M params
 }
 DEFAULT_ARCH = "resnet50"
 
@@ -75,8 +78,24 @@ class TrashDataset(Dataset):
         return self.transform(image), CLASS_TO_IDX[row.label]
 
 
+class DinoClassifier(nn.Module):
+    """A DINOv2 backbone with a 6-class head on its class token."""
+
+    def __init__(self, name, pretrained=True):
+        super().__init__()
+        from transformers import Dinov2Config, Dinov2Model
+        self.backbone = (Dinov2Model.from_pretrained(name, use_safetensors=True) if pretrained
+                         else Dinov2Model(Dinov2Config.from_pretrained(name)))
+        self.head = nn.Linear(self.backbone.config.hidden_size, len(CLASSES))
+
+    def forward(self, x):
+        return self.head(self.backbone(pixel_values=x).pooler_output)
+
+
 def build_model(arch, pretrained=True):
-    """`arch` from ARCHS, with ImageNet weights (unless pretrained=False) and a new 6-class head."""
+    """`arch` from ARCHS, with pretrained weights (unless pretrained=False) and a new 6-class head."""
+    if isinstance(ARCHS[arch], str):  # Hugging Face backbone
+        return DinoClassifier(ARCHS[arch], pretrained).to(DEVICE)
     constructor, weights = ARCHS[arch]
     model = constructor(weights=weights if pretrained else None)
     if hasattr(model, "fc"):  # ResNets
