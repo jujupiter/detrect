@@ -39,11 +39,6 @@ ARCHS = {
 DEFAULT_ARCH = "resnet50"
 
 
-def base_checkpoint(arch):
-    """train.py: trashnet only."""
-    return f"models/{arch}_base.pth"
-
-
 def mixed_checkpoint(arch):
     """train_mixed.py: trashnet + RealWaste + TACO."""
     return f"models/{arch}_mixed.pth"

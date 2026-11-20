@@ -2,7 +2,7 @@
 plus the Wikimedia Commons photos (never used for training): the 20-photo sets in data/commons_studio/ and
 data/commons_outdoor/, and the large set in data/commons_large/, scored as two benchmarks, studio and outdoor.
 
-usage: python benchmark.py models/resnet50_base.pth models/resnet50_mixed.pth
+usage: python benchmark.py models/resnet50_mixed.pth
 Writes results/benchmark_<checkpoint>.csv with one prediction per image (and the run's energy to results/runs.csv), then prints the accuracy per class
 and a confusion matrix per benchmark: rows are the true class, columns the predicted class.
 

@@ -1,6 +1,6 @@
-"""Fine-tune the trashnet model on trashnet + RealWaste + TACO, with every batch mixing the three sources.
+"""Train a model on trashnet + RealWaste + TACO from ImageNet weights, with every batch mixing the three sources.
 
-Run prepare_extra_data.py and train.py first. Starts from models/<arch>_base.pth and saves models/<arch>_mixed.pth.
+Run prepare_extra_data.py first. Saves models/<arch>_mixed.pth.
 usage: python train_mixed.py [--arch resnet50] [--epochs 20] [--patience 4]
 """
 import argparse
@@ -11,12 +11,12 @@ import torch
 import torch.nn as nn
 from torch.utils.data import DataLoader, Sampler
 
-from common import (measured_run, ARCHS, DEFAULT_ARCH, DEVICE, NUM_WORKERS, TRAIN_TF, TrashDataset, base_checkpoint, load_model, load_splits,
+from common import (measured_run, ARCHS, DEFAULT_ARCH, DEVICE, NUM_WORKERS, TRAIN_TF, TrashDataset, build_model, load_splits,
                     mixed_checkpoint, predict_all, save_model)
 
 # images per source in every batch of 32
 BATCH_MIX = {"trashnet": 12, "realwaste": 10, "taco": 10}
-LR = 5e-5  # lower than train.py: we start from an already trained model
+LR = 1e-4
 
 
 class MixedBatchSampler(Sampler):
@@ -68,12 +68,12 @@ def main():
         sampler = MixedBatchSampler(train.source.tolist(), BATCH_MIX)
         train_loader = DataLoader(TrashDataset(train, TRAIN_TF), batch_sampler=sampler, num_workers=NUM_WORKERS)
 
-        model = load_model(base_checkpoint(args.arch))
+        model = build_model(args.arch)  # ImageNet weights, new 6-class head
         criterion = nn.CrossEntropyLoss()
         optimizer = torch.optim.Adam(model.parameters(), lr=LR)
 
         acc = evaluate(model, val)
-        print("Before fine-tuning | val acc " + " ".join(f"{s} {a:.3f}" for s, a in acc.items()), flush=True)
+        print("Before training | val acc " + " ".join(f"{s} {a:.3f}" for s, a in acc.items()), flush=True)
         # select on the mean over sources, so trashnet (the easiest) does not decide alone
         best, best_epoch = acc.mean(), 0
         save_model(model, args.arch, out)
