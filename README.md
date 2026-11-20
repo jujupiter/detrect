@@ -75,6 +75,17 @@ now in the page (several items of one material are accepted; several materials a
 `benchmark.py` scores the exported set as two benchmarks, `commons large studio` and `commons large outdoor`.
 Its 16 photos with no class (drink cartons, food waste) have a J-code only and are left out until phase 2.
 
+## Energy
+
+`train.py`, `train_mixed.py` and `benchmark.py` measure their own runs with CodeCarbon and add a row to
+`results/runs.csv`: date, script, model, outcome, duration, hardware, kWh and gCO₂e. Every run is logged,
+including failed (an error) and aborted (Ctrl+C) ones; change the outcome to `discarded` by hand when a model
+is not kept. CodeCarbon runs offline and calls no outside service. The carbon intensity of the electricity
+depends on where it runs: set `DETRECT_COUNTRY` to an ISO 3166 code (e.g. `export DETRECT_COUNTRY=FRA`) on your
+own machine. On Kaggle, the Google Cloud region is read from the machine itself. Without either, CodeCarbon's
+world average is used, and the row says so. On a laptop without a power sensor, the CPU's power is estimated.
+This follows the Green Software Foundation's SCI for AI (#9).
+
 ## Licence and credits
 
 The code is under the MIT licence (`LICENSE`). The datasets keep their own licences: `CREDITS.md` lists them, with
@@ -103,10 +114,14 @@ already installed. Then run:
 %cd /kaggle/working
 !git -C detrect pull || git clone -b init https://github.com/jujupiter/detrect.git
 %cd detrect
+!pip install -q codecarbon==3.3.2
 !bash download_data.sh && python prepare_extra_data.py && python download_commons.py
 !python train.py && python train_mixed.py
 !python benchmark.py models/resnet50_base.pth models/resnet50_mixed.pth
 ```
+
+Each run's energy is added to `results/runs.csv` in the notebook. Copy its new rows into the repository's
+`results/runs.csv` and commit them, so that no run is left out (see "Energy" below).
 
 Committed runs ("Save & Run All") publish everything in `/kaggle/working` as output, datasets included.
 Keep the notebook private, or delete `data/` at the end of the run before making it public.

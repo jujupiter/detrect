@@ -9,3 +9,7 @@ torchvision; sys_platform != "darwin" or platform_machine != "x86_64"
 pandas
 scikit-learn
 Pillow
+# Energy and emissions of every run, in results/runs.csv (see measured_run in common.py)
+codecarbon==3.3.2
+# Intel Macs: cryptography, pulled in by codecarbon, has no ready-made build for them after version 48
+cryptography<49; sys_platform == "darwin" and platform_machine == "x86_64"

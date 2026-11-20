@@ -3,7 +3,7 @@ plus the Wikimedia Commons photos (never used for training): the 20-photo sets i
 data/commons_outdoor/, and the large set in data/commons_large/, scored as two benchmarks, studio and outdoor.
 
 usage: python benchmark.py models/resnet50_base.pth models/resnet50_mixed.pth
-Writes results/benchmark_<checkpoint>.csv with one prediction per image, then prints the accuracy per class
+Writes results/benchmark_<checkpoint>.csv with one prediction per image (and the run's energy to results/runs.csv), then prints the accuracy per class
 and a confusion matrix per benchmark: rows are the true class, columns the predicted class.
 
 A results CSV can be given instead of a checkpoint, to print its report again without running the model:
@@ -14,7 +14,7 @@ from pathlib import Path
 
 import pandas as pd
 
-from common import CLASSES, load_model, load_splits, predict_all
+from common import CLASSES, load_model, load_splits, measured_run, predict_all
 
 COMMONS = {"data/commons_studio": "commons studio", "data/commons_outdoor": "commons outdoor"}
 LARGE = "data/commons_large"  # one benchmark per setting (studio, outdoor)
@@ -50,7 +50,8 @@ def main():
         if arg.endswith(".csv"):
             res = pd.read_csv(arg)
         else:
-            res = predict_all(load_model(arg), benchmarks())
+            with measured_run("benchmark.py", arg):
+                res = predict_all(load_model(arg), benchmarks())
             res.to_csv(f"results/benchmark_{Path(arg).stem}.csv", index=False)
         summary[Path(arg).name] = res.groupby("benchmark", sort=False).ok.mean()
         counts = res.benchmark.value_counts(sort=False)
