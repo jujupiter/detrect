@@ -20,7 +20,11 @@ Keys:  Enter      accept as pre-filled (class, J-code, studio or outdoor), go to
        ← →        previous / next photo        u   jump to the first photo not reviewed yet
        a          show every photo / only the suggested ones
 
+With --multiple, the page shows only the photos Claude suggested as several materials (kept for the detection
+test set, #10), and Enter confirms them as such.
+
 usage: python review_commons.py            open the review page on http://127.0.0.1:8765
+       python review_commons.py --multiple confirm the photos suggested as several materials
        python review_commons.py --export   write the accepted photos to data/commons_large/ for benchmark.py
 """
 import argparse
@@ -44,6 +48,7 @@ SUGGESTIONS = DIR / "suggestions.csv"
 EXPORT = Path("data/commons_large")
 LABEL_COLUMNS = ["id", "status", "label", "jcode", "setting", "reviewed_at"]
 PORT = 8765
+FOCUS = ""  # "multiple" with --multiple: only show the photos Claude suggested with that status
 
 
 def load_labels():
@@ -76,7 +81,8 @@ def page_data():
                 labels={r["id"]: r for r in load_labels().to_dict("records")},
                 suggestions=({r["id"]: r for r in pd.read_csv(SUGGESTIONS, dtype=str).fillna("").to_dict("records")}
                              if SUGGESTIONS.exists() else {}),
-                jlist=jlist[["jcode", "name", "material"]].to_dict("records"))
+                jlist=jlist[["jcode", "name", "material"]].to_dict("records"),
+                focus=FOCUS)
 
 
 class Handler(BaseHTTPRequestHandler):
@@ -138,10 +144,14 @@ def export():
 
 def main():
     parser = argparse.ArgumentParser()
-    parser.add_argument("--export", action="store_true", help="write the accepted photos to data/commons_large/")
+    mode = parser.add_mutually_exclusive_group()
+    mode.add_argument("--export", action="store_true", help="write the accepted photos to data/commons_large/")
+    mode.add_argument("--multiple", action="store_true", help="only show the photos suggested as several materials")
     args = parser.parse_args()
     if args.export:
         return export()
+    global FOCUS
+    FOCUS = "multiple" if args.multiple else ""
     server = ThreadingHTTPServer(("127.0.0.1", PORT), Handler)
     url = f"http://127.0.0.1:{PORT}"
     print(f"Review page on {url} (Ctrl+C to stop; labels are saved as you go)")
@@ -224,9 +234,11 @@ async function load() {
   showAll = !Object.keys(D.suggestions).length;
   i = firstTodo(); show();
 }
-// with suggestions, only show what Claude would accept (and what you already reviewed), unless showAll
+// with suggestions, only show what Claude would accept (and what you already reviewed), unless showAll;
+// with --multiple (D.focus), only the photos Claude suggested as several materials
 let showAll = false;
-const visible = c => showAll || !!D.labels[c.id] || (D.suggestions[c.id] || {}).status === "accepted";
+const visible = c => showAll || (D.focus ? (D.suggestions[c.id] || {}).status === D.focus
+  : !!D.labels[c.id] || (D.suggestions[c.id] || {}).status === "accepted");
 const waiting = () => D.candidates.filter(c => !D.labels[c.id] && visible(c)).length;
 function step(from, dir) {
   for (let k = from + dir; k >= 0 && k < D.candidates.length; k += dir) if (visible(D.candidates[k])) return k;
@@ -246,6 +258,7 @@ function show() {
   $("state").innerHTML = (l ? `<span class="status ${l.status}">${l.status}</span>${l.setting ? " · " + l.setting : ""}` : "not reviewed") +
     (s ? `<br>Claude: ${esc([s.status, s.label, s.jcode, s.setting].filter(Boolean).join(" · "))} (${esc(s.confidence)}): ${esc(s.reason)}` : "");
   $("mode").textContent = showAll ? "only Claude's suggested photos" : "every photo";
+  $("asis").innerHTML = "<kbd>Enter</kbd> " + (prefilled() === "multiple" ? "confirm: several materials" : "accept as pre-filled");
   $("jcode").value = cur.jcode; draw(); tally();
   const next = D.candidates[step(i, 1)]; if (next) new Image().src = `/img/${next.id}.jpg`;
 }
@@ -290,7 +303,9 @@ $("studio").onclick = () => decide("accepted", "studio");
 $("outdoor").onclick = () => decide("accepted", "outdoor");
 $("reject").onclick = () => decide("rejected");
 $("multiple").onclick = () => decide("multiple");
-const asis = () => decide("accepted", cur.setting || "studio");
+// Enter keeps the pre-filled decision: several materials if that is what was suggested or saved, else accept
+const prefilled = () => { const c = D.candidates[i], l = D.labels[c.id]; return (l || D.suggestions[c.id] || {}).status; };
+const asis = () => prefilled() === "multiple" ? decide("multiple") : decide("accepted", cur.setting || "studio");
 $("asis").onclick = asis;
 $("jcode").addEventListener("change", () => { cur.jcode = findJcode($("jcode").value); $("jcode").value = cur.jcode; draw(); });
 $("jcode").addEventListener("keydown", e => { if (e.key === "Enter" || e.key === "Escape") { $("jcode").dispatchEvent(new Event("change")); $("jcode").blur(); } e.stopPropagation(); });
