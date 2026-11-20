@@ -1,4 +1,11 @@
-"""Shared by every script: classes, image transforms, dataset, model and batch prediction."""
+"""Shared by every script: classes, image transforms, dataset, model, batch prediction and run measurement."""
+import csv
+import os
+import platform
+import time
+import urllib.request
+from contextlib import contextmanager
+from datetime import datetime, timezone
 from pathlib import Path
 
 import pandas as pd
@@ -133,3 +140,67 @@ def predict_all(model, df):
             preds += [CLASSES[i] for i in idx.cpu().tolist()]
             confs += conf.cpu().tolist()
     return df.assign(pred=preds, conf=confs, ok=lambda d: d.pred == d.label)
+
+
+RUNS = Path("results/runs.csv")
+RUN_COLUMNS = ["date", "script", "model", "outcome", "duration_s", "hardware", "energy_kwh", "emissions_gco2e", "location"]
+
+
+def run_location():
+    """Where the electricity comes from, for its carbon intensity, without calling any outside service:
+    DETRECT_COUNTRY if set (ISO 3166 alpha-3, e.g. FRA); on Kaggle, the Google Cloud region given by the machine's
+    own metadata server; otherwise nothing, and CodeCarbon uses its world average."""
+    if os.environ.get("DETRECT_COUNTRY"):
+        return dict(country_iso_code=os.environ["DETRECT_COUNTRY"].upper())
+    if "KAGGLE_KERNEL_RUN_TYPE" in os.environ:
+        try:
+            req = urllib.request.Request("http://metadata.google.internal/computeMetadata/v1/instance/zone",
+                                         headers={"Metadata-Flavor": "Google"})
+            zone = urllib.request.urlopen(req, timeout=2).read().decode().rsplit("/", 1)[-1]  # e.g. us-central1-a
+            return dict(cloud_provider="gcp", cloud_region=zone.rsplit("-", 1)[0])
+        except OSError:
+            pass
+    return {}
+
+
+@contextmanager
+def measured_run(script, model):
+    """Measure a run with CodeCarbon (offline mode: no network call) and append it to results/runs.csv, whatever its
+    outcome: done, failed (an error) or aborted (Ctrl+C). Change the outcome to `discarded` by hand for a run whose
+    model is not kept. If CodeCarbon cannot run, the run goes on and is logged without energy."""
+    start, tracker, outcome = time.monotonic(), None, "failed"
+    try:
+        from codecarbon import OfflineEmissionsTracker
+        tracker = OfflineEmissionsTracker(save_to_file=False, log_level="error", **run_location())
+        tracker.start()
+    except Exception as err:  # never let measurement stop a run
+        print(f"CodeCarbon is not measuring this run ({err}); it is logged without energy.")
+        tracker = None
+    try:
+        yield
+        outcome = "done"
+    except KeyboardInterrupt:
+        outcome = "aborted"
+        raise
+    finally:
+        row = dict(date=datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ"), script=script, model=str(model),
+                   outcome=outcome, duration_s=round(time.monotonic() - start), hardware=platform.processor(),
+                   energy_kwh="", emissions_gco2e="", location="")
+        if tracker is not None:
+            try:
+                tracker.stop()
+                d = tracker.final_emissions_data
+                row.update(hardware=d.gpu_model if d.gpu_count else d.cpu_model, energy_kwh=f"{d.energy_consumed:.6f}",
+                           emissions_gco2e=f"{d.emissions * 1000:.3f}",
+                           location=d.cloud_region or d.country_iso_code or "world average")
+            except Exception as err:
+                print(f"CodeCarbon could not finish measuring ({err}); the run is logged without energy.")
+        new = not RUNS.exists()
+        RUNS.parent.mkdir(exist_ok=True)
+        with RUNS.open("a", newline="") as f:
+            writer = csv.DictWriter(f, fieldnames=RUN_COLUMNS)
+            if new:
+                writer.writeheader()
+            writer.writerow(row)
+        print(f"Run logged in {RUNS}: {row['outcome']}, {row['duration_s']} s, "
+              + (f"{row['energy_kwh']} kWh, {row['emissions_gco2e']} gCO2e ({row['location']})" if row["energy_kwh"] else "no energy figure"))
