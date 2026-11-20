@@ -1,0 +1,2 @@
+# results/runs.csv only gets rows appended: when branches each add runs, keep all of them
+results/runs.csv merge=union
