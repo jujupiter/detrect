@@ -1,0 +1,4 @@
+date,script,model,outcome,duration_s,hardware,energy_kwh,emissions_gco2e,location
+2026-11-20T09:22:19Z,train_mixed.py,models/resnet50_mixed.pth,done,824,2 x Tesla T4,0.022389,10.635,world average
+2026-11-20T09:22:37Z,benchmark.py,models/resnet50_mixed.pth,done,11,2 x Tesla T4,0.000251,0.119,world average
+2026-11-20T10:41:13Z,check: Kaggle checkpoint on 40 photos,models/resnet50_mixed.pth,done,17,Intel(R) Core(TM) i5-8279U CPU @ 2.40GHz,0.000126,0.060,world average
