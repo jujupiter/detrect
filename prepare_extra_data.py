@@ -46,7 +46,7 @@ SEED = 42
 
 
 def fetch(url):
-    req = urllib.request.Request(url, headers={"User-Agent": "detrect/0.1"})
+    req = urllib.request.Request(url, headers={"User-Agent": "lilitter/0.1"})
     return urllib.request.urlopen(req, timeout=120).read()
 
 

@@ -1,12 +1,12 @@
 ---
 name: new-task
-description: Start and finish a new detrect task the project's way, with a ticket in the Detrect GitHub Project, its own branch, and a pull request merged into init. Use whenever the user asks for a new piece of work (feature, fix, data or training job) that has no ticket or branch yet.
+description: Start and finish a new lilitter task the project's way, with a ticket in the Lilitter GitHub Project, its own branch, and a pull request merged into main. Use whenever the user asks for a new piece of work (feature, fix, data or training job) that has no ticket or branch yet.
 ---
 
 # New task: ticket, branch, pull request
 
-`init` is the main branch and Kaggle clones it, so only merged work gets trained. Never commit a new job on
-`init` or on another task's branch, and never rename a branch to reuse it: start a new one.
+`main` is the main branch and Kaggle clones it, so only merged work gets trained. Never commit a new job on
+`main` or on another task's branch, and never rename a branch to reuse it: start a new one.
 
 ## 1. Confirm first
 
@@ -22,13 +22,13 @@ Wait for their OK, unless they already said to go ahead with this task.
 ```bash
 gh issue list --state all --search "<keywords>"   # reuse an existing ticket if there is one
 url=$(gh issue create --title "<title>" --body "<goal, then a - [ ] checklist>")
-gh project item-add 1 --owner jujupiter --url "$url"   # project 1 = Detrect
+gh project item-add 1 --owner jujupiter --url "$url"   # project 1 = Lilitter
 ```
 
 ## 3. Branch
 
 ```bash
-git checkout init && git pull --ff-only
+git checkout main && git pull --ff-only
 git checkout -b <number>-<slug>
 ```
 
@@ -41,11 +41,11 @@ short summary line, then what changed and why.
 
 ```bash
 git push -u origin <branch>
-gh pr create --base init --title "<title>" --body "<what changed and why>
+gh pr create --base main --title "<title>" --body "<what changed and why>
 
 Closes #<number>"
 gh pr merge <pr> --merge --delete-branch
-git checkout init && git pull --ff-only && git fetch --prune
+git checkout main && git pull --ff-only && git fetch --prune
 ```
 
 Merge only once the change is checked:

@@ -148,10 +148,10 @@ RUN_COLUMNS = ["date", "script", "model", "outcome", "duration_s", "hardware", "
 
 def run_location():
     """Where the electricity comes from, for its carbon intensity, without calling any outside service:
-    DETRECT_COUNTRY if set (ISO 3166 alpha-3, e.g. FRA); on Kaggle, the Google Cloud region given by the machine's
+    LILITTER_COUNTRY if set (ISO 3166 alpha-3, e.g. FRA); on Kaggle, the Google Cloud region given by the machine's
     own metadata server; otherwise nothing, and CodeCarbon uses its world average."""
-    if os.environ.get("DETRECT_COUNTRY"):
-        return dict(country_iso_code=os.environ["DETRECT_COUNTRY"].upper())
+    if os.environ.get("LILITTER_COUNTRY"):
+        return dict(country_iso_code=os.environ["LILITTER_COUNTRY"].upper())
     if "KAGGLE_KERNEL_RUN_TYPE" in os.environ:
         try:
             req = urllib.request.Request("http://metadata.google.internal/computeMetadata/v1/instance/zone",

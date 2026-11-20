@@ -1,4 +1,4 @@
-# detrect
+# lilitter
 
 Garbage image classification project, starting from the trashnet dataset.
 
@@ -81,7 +81,7 @@ Its 16 photos with no class (drink cartons, food waste) have a J-code only and a
 `results/runs.csv`: date, script, model, outcome, duration, hardware, kWh and gCO₂e. Every run is logged,
 including failed (an error) and aborted (Ctrl+C) ones; change the outcome to `discarded` by hand when a model
 is not kept. CodeCarbon runs offline and calls no outside service. The carbon intensity of the electricity
-depends on where it runs: set `DETRECT_COUNTRY` to an ISO 3166 code (e.g. `export DETRECT_COUNTRY=FRA`) on your
+depends on where it runs: set `LILITTER_COUNTRY` to an ISO 3166 code (e.g. `export LILITTER_COUNTRY=AUS`) on your
 own machine. On Kaggle, the Google Cloud region is read from the machine itself. Without either, CodeCarbon's
 world average is used, and the row says so. On a laptop without a power sensor, the CPU's power is estimated.
 This follows the Green Software Foundation's SCI for AI (#9).
@@ -112,8 +112,8 @@ already installed. Then run:
 
 ```bash
 %cd /kaggle/working
-!git -C detrect pull || git clone -b init https://github.com/jujupiter/detrect.git
-%cd detrect
+!git -C lilitter pull || git clone -b main https://github.com/jujupiter/lilitter.git
+%cd lilitter
 !pip install -q codecarbon==3.3.2
 !bash download_data.sh && python prepare_extra_data.py && python download_commons.py
 !python train.py && python train_mixed.py

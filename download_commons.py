@@ -30,7 +30,7 @@ from PIL import Image
 
 FOLDERS = ["data/commons_studio", "data/commons_outdoor", "data/commons_large"]
 # Wikimedia refuses requests whose user agent has no contact information
-USER_AGENT = "detrect/0.1 (https://github.com/jujupiter/detrect)"
+USER_AGENT = "lilitter/0.1 (https://github.com/jujupiter/lilitter)"
 API = "https://commons.wikimedia.org/w/api.php"
 THUMB_WIDTH = 640  # Commons answers with its nearest standard size (960 px wide), or the original if smaller
 WAYBACK = "https://web.archive.org/web/2026id_/"  # id_ = the archived bytes, unmodified

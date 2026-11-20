@@ -1,4 +1,4 @@
-# detrect
+# lilitter
 
 A litter classifier that anyone can use for free, built in three phases:
 
@@ -6,7 +6,7 @@ A litter classifier that anyone can use for free, built in three phases:
 2. **Finer categories:** the EU Joint List of Litter Categories (J-codes, `data/jlist.csv`)
 3. **Several items per photo:** object detection with D-FINE (#10)
 
-`README.md` explains what each script does and how to run it. Work is tracked as issues on the GitHub project *Detrect*.
+`README.md` explains what each script does and how to run it. Work is tracked as issues on the GitHub project *Lilitter*.
 
 ## Data and licences
 
@@ -83,6 +83,6 @@ gCO₂e per training run of a kept model, and later per photo classified in the 
 - One script per step, with a docstring at the top giving its usage. Shared code goes in `common.py`.
 - Scripts only download what is missing, so they are safe to run again.
 - New script, data file or option → update `README.md` in the same commit.
-- `init` is the main branch (Kaggle clones it). Commit messages: a short summary line, then what changed and why.
-- One ticket and one branch per task, merged into `init` by pull request: follow the `new-task` skill
+- `main` is the main branch (Kaggle clones it). Commit messages: a short summary line, then what changed and why.
+- One ticket and one branch per task, merged into `main` by pull request: follow the `new-task` skill
   (`.claude/skills/new-task/`), and confirm the plan with the user before creating the ticket.
