@@ -17,7 +17,7 @@ Build a trash detection and classification system, developed in phases:
 | `common.py` | Shared code: classes, transforms, dataset, models (`ARCHS`), checkpoints, batch prediction, file paths | | |
 | `download_data.sh` | Download trashnet | | `data/trashnet/` |
 | `split.py` | Split trashnet 70/15/15 | `data/trashnet/` | `data/splits_trashnet.csv` |
-| `download_commons.py` | Download the 40 Wikimedia Commons test photos, with fallbacks (see below) | `data/commons_*/sources.csv` | `data/commons_*/` |
+| `download_commons.py` | Download the Wikimedia Commons test photos (40 + 537), with fallbacks (see below) | `data/commons_*/sources.csv` | `data/commons_*/` |
 | `prepare_extra_data.py` | Download RealWaste and TACO, map them to the 6 classes, split them | | `data/realwaste/`, `data/taco/`, `data/splits_extra.csv` |
 | `train.py` | Train a model (`--arch`, ResNet-50 by default) on trashnet only, from ImageNet weights | `data/splits_trashnet.csv` | `models/<arch>_base.pth` |
 | `train_mixed.py` | Fine-tune that model on trashnet + RealWaste + TACO, every batch mixing the three | both splits files, `models/<arch>_base.pth` | `models/<arch>_mixed.pth` |
@@ -36,6 +36,7 @@ Build a trash detection and classification system, developed in phases:
 | `data/taco/` | Objects cropped from [TACO](http://tacodataset.org) litter photos | annotations CC BY 4.0, images per photo (see `CREDITS.md`) | no, `prepare_extra_data.py` |
 | `data/commons_studio/` | 20 product-style photos from Wikimedia Commons | per photo, in `sources.csv` | `sources.csv` only, `download_commons.py` |
 | `data/commons_outdoor/` | 20 outdoor photos from Wikimedia Commons | per photo, in `sources.csv` | `sources.csv` only, `download_commons.py` |
+| `data/commons_large/` | 537 reviewed Commons photos (345 studio, 192 outdoor), with class, J-code and setting | per photo, in `sources.csv` | `sources.csv` only, `download_commons.py` |
 
 Every source has its own train/val/test split. TACO crops from the same photo stay in the same split.
 The Commons sets are only used for testing, never for training.
@@ -69,6 +70,9 @@ reason). When it exists, the review page only shows the photos it suggests accep
 Only what a person confirms goes into `labels.csv`. On a 100-photo pilot, Claude and the reviewer agreed on 76 photos
 whether to keep each one, and on every class where both accepted it; most of the disagreements came from the two rules
 now in the page (several items of one material are accepted; several materials are kept for detection).
+
+`benchmark.py` scores the exported set as two benchmarks, `commons large studio` and `commons large outdoor`.
+Its 16 photos with no class (drink cartons, food waste) have a J-code only and are left out until phase 2.
 
 ## Licence and credits
 
@@ -113,7 +117,7 @@ Keep the notebook private, or delete `data/` at the end of the run before making
 bash download_data.sh
 python split.py
 python prepare_extra_data.py          # ~700 MB RealWaste zip + ~1,000 TACO photos
-python download_commons.py            # 40 test photos, 8 MB
+python download_commons.py            # 577 test photos, about 120 MB
 
 # Training
 python train.py                       # trashnet only -> models/resnet50_base.pth

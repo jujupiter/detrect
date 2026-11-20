@@ -28,7 +28,7 @@ from pathlib import Path
 import pandas as pd
 from PIL import Image
 
-FOLDERS = ["data/commons_studio", "data/commons_outdoor"]
+FOLDERS = ["data/commons_studio", "data/commons_outdoor", "data/commons_large"]
 # Wikimedia refuses requests whose user agent has no contact information
 USER_AGENT = "detrect/0.1 (https://github.com/jujupiter/detrect)"
 API = "https://commons.wikimedia.org/w/api.php"

@@ -1,5 +1,6 @@
 """Evaluate one or more checkpoints on every benchmark: the test splits of trashnet, RealWaste and TACO,
-plus the Wikimedia Commons photos in data/commons_studio/ and data/commons_outdoor/ (never used for training).
+plus the Wikimedia Commons photos (never used for training): the 20-photo sets in data/commons_studio/ and
+data/commons_outdoor/, and the large set in data/commons_large/, scored as two benchmarks, studio and outdoor.
 
 usage: python benchmark.py models/resnet50_base.pth models/resnet50_mixed.pth
 Writes results/benchmark_<checkpoint>.csv with one prediction per image, then prints the accuracy per class
@@ -16,11 +17,15 @@ import pandas as pd
 from common import CLASSES, load_model, load_splits, predict_all
 
 COMMONS = {"data/commons_studio": "commons studio", "data/commons_outdoor": "commons outdoor"}
+LARGE = "data/commons_large"  # one benchmark per setting (studio, outdoor)
 
 
 def benchmarks():
     tests = load_splits().query("split == 'test'").assign(benchmark=lambda d: d.source + " test")
     commons = [pd.read_csv(f"{folder}/sources.csv").assign(benchmark=name) for folder, name in COMMONS.items()]
+    # photos with no class (drink cartons, food waste) only have a J-code: they wait for phase 2
+    large = pd.read_csv(f"{LARGE}/sources.csv").dropna(subset=["label"])
+    commons.append(large.assign(benchmark="commons large " + large.setting))
     df = pd.concat([d[["path", "label", "benchmark"]] for d in [tests] + commons], ignore_index=True)
     present = df.path.map(lambda p: Path(p).exists())
     if not present.all():  # e.g. Commons photos that could not be downloaded (see download_commons.py)
